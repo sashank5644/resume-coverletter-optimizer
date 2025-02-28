@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Optimizer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      width: 350px;
+      padding: 15px;
+      color: #333;
+    }
+    
+    h1 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #6c757d;
+    }
+    
+    .status.success {
+      background-color: #d4edda;
+      border-left: 4px solid #28a745;
+    }
+    
+    .status.error {
+      background-color: #f8d7da;
+      border-left: 4px solid #dc3545;
+    }
+    
+    button {
+      background-color: #0077b5;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #005885;
+    }
+    
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .login-section {
+      display: none;
+      margin-top: 15px;
+    }
+    
+    input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .separator {
+      border-top: 1px solid #eee;
+      margin: 15px 0;
+    }
+    
+    .icon-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .icon-text svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    #loginBtn, #signupBtn {
+      background-color: #4CAF50;
+    }
+    
+    #loginBtn:hover, #signupBtn:hover {
+      background-color: #3e8e41;
+    }
+  </style>
+</head>
+<body>
+  <h1>Resume & Cover Letter Optimizer</h1>
+  
+  <div class="container">
+    <div id="jobStatus" class="status">
+      Checking for job description...
+    </div>
+    
+    <div id="loginStatus" class="status">
+      Not logged in. Please log in to use all features.
+    </div>
+    
+    <div class="actions">
+      <button id="extractBtn" disabled>Extract Job Description</button>
+      <button id="optimizeBtn" disabled>Optimize My Resume</button>
+      <button id="coverLetterBtn" disabled>Generate Cover Letter</button>
+      <button id="loginToggleBtn">Login / Sign Up</button>
+    </div>
+    
+    <div id="loginSection" class="login-section">
+      <div class="login-form">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <div style="display: flex; gap: 10px;">
+          <button id="loginBtn" style="flex: 1;">Login</button>
+          <button id="signupBtn" style="flex: 1;">Sign Up</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="separator"></div>
+    
+    <div class="icon-text">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 16v-4"></path>
+        <path d="M12 8h.01"></path>
+      </svg>
+      <small>Works on LinkedIn and Indeed job pages.</small>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
