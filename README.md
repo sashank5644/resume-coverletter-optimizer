@@ -64,7 +64,7 @@ API design, browser extension development, and AI integration—key skills for a
 * Ollama (running locally)
 * Chrome browser (for extension)
 
-# Step 1
+# Steps
 1. Clone Repository
 2. Create ".env" file in "resume-optimizer-backend" folder with
 
@@ -80,4 +80,40 @@ PORT=3000
 ```ini
 VITE_API_URL=http://localhost:3000
 ```
+4. Start Ollama application
+
+   * Pull deepseek model if needed
+     ```ini
+        ollama pull deepseek-coder
+     ```
+
+5. Go to "resume-optimizer-backend directory" and run
+
+```ini
+   cd resume-optimizer-backend
+   npm install
+   node server.js
+```
+
+6. In a separate terminal Go to "resume-optimizer-frontend directory" and run
+
+```ini
+   cd resume-optimizer-frontend
+   npm install
+   npm run dev
+```
+
+# Test Application
+
+# Borwser App
+
+ * Go to "http://localhost:5173/"
+
+# Google Extension
+
+ * Go to "chrome://extensions/"
+ * Toggle "Developer mode" on top right
+ * Click "Load unpacked" on top left
+ * Select "resume-optimizer-extension" folder
+ * Now you can test it by going to any job posting on linkedin or indeed and use the resume optimization service
 
