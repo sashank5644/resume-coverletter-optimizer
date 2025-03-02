@@ -5,8 +5,8 @@ This is a comprehensive job application management system built to assist job se
 
 # UI
 
-<img width="330" height="300" alt="Image" src="https://github.com/user-attachments/assets/0c5d2647-5833-4f6f-aba4-c8cf251b6ab4" />
-<img width="330" height="300" alt="Image" src="https://github.com/user-attachments/assets/c50897b8-ebe3-4c0d-acd8-26a19363e864" />
+<img width="400" height="400" alt="Image" src="https://github.com/user-attachments/assets/0c5d2647-5833-4f6f-aba4-c8cf251b6ab4" />
+<img width="400" height="400" alt="Image" src="https://github.com/user-attachments/assets/c50897b8-ebe3-4c0d-acd8-26a19363e864" />
 <img width="330" height="300" alt="Image" src="https://github.com/user-attachments/assets/1622472f-4a84-438f-bdd2-e538639e6c17" />
 <img width="330" height="300" alt="Image" src="https://github.com/user-attachments/assets/7f9a0cba-0d89-45b2-9791-f08585e8c5dc" />
 <img width="330" height="300" alt="Image" src="https://github.com/user-attachments/assets/c23817f7-9c3f-49e4-a8b9-0c60cf013a31" />
