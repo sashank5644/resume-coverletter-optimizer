@@ -61,7 +61,23 @@ API design, browser extension development, and AI integration—key skills for a
 # Prerequisites
 * Node.js (v16+)
 * MongoDB (local or Atlas)
-* Ollama (running locally or accessible via URL)
+* Ollama (running locally)
 * Chrome browser (for extension)
 
+# Step 1
+1. Clone Repository
+2. Create ".env" file in "resume-optimizer-backend" folder with
+
+```ini
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+OLLAMA_URL=http://localhost:11434
+OLLAMA_MODEL=deepseek-r1:1.5b
+PORT=3000
+```
+3. Create ".env" file in "resume-optimizer-frontend" folder with
+
+```ini
+VITE_API_URL=http://localhost:3000
+```
 
