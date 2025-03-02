@@ -1,7 +1,18 @@
 # Job Application Tracker with AI-Powered Resume Optimization
 
 # Overview
-This is a comprehensive job application management system built to assist job seekers in tracking applications, optimizing resumes, and generating tailored cover letters using AI. The project consists of three integrated components:
+This is a comprehensive job application management system built to assist job seekers in tracking applications, optimizing resumes, and generating tailored cover letters using AI. The project consists of three integrated components.
+
+# UI
+
+<img width="300" alt="Image" src="https://github.com/user-attachments/assets/0c5d2647-5833-4f6f-aba4-c8cf251b6ab4" />
+<img width="300" alt="Image" src="https://github.com/user-attachments/assets/c50897b8-ebe3-4c0d-acd8-26a19363e864" />
+<img width="300" alt="Image" src="https://github.com/user-attachments/assets/1622472f-4a84-438f-bdd2-e538639e6c17" />
+<img width="300" alt="Image" src="https://github.com/user-attachments/assets/7f9a0cba-0d89-45b2-9791-f08585e8c5dc" />
+<img width="300" alt="Image" src="https://github.com/user-attachments/assets/c23817f7-9c3f-49e4-a8b9-0c60cf013a31" />
+<img width="300" alt="Image" src="https://github.com/user-attachments/assets/5ab29479-9443-43d1-92a4-6e54298a90f1" />
+<img width="300" alt="Image" src="https://github.com/user-attachments/assets/f3fb14cc-2963-450b-9d94-126483becae6" />
+<img width="300" alt="Image" src="https://github.com/user-attachments/assets/370ed07b-6221-4cb6-94c5-5e883a6ec001" />
 
 # The project was developed using a MERN stack (MongoDB, Express.js, React, Node.js)
 
