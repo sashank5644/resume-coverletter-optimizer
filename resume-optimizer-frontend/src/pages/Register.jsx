@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { AuthContext } from '../components/AuthContext';
+import axios from 'axios'; // Import axios explicitly
+import "../styling/Register.css";
 
-const Register = ({ setUser }) => {
+const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,6 +14,7 @@ const Register = ({ setUser }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const { name, email, password, password2 } = formData;
 
@@ -31,21 +34,24 @@ const Register = ({ setUser }) => {
     setLoading(true);
     
     try {
-      const res = await axios.post('/api/users/register', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      console.log('Attempting registration to:', `${apiUrl}/api/users/register`); // Debug log
+      const res = await axios.post(`${apiUrl}/api/users/register`, {
         name,
         email,
         password
       });
       
-      localStorage.setItem('token', res.data.token);
-      axios.defaults.headers.common['x-auth-token'] = res.data.token;
-      
-      // Fetch user data
-      const userRes = await axios.get('/api/users/me');
-      setUser(userRes.data);
+      // Use the login function from AuthContext to set the token and fetch user
+      await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.msg || 'Registration failed. Please try again.');
+      console.error('Registration error:', err.response?.data || err.message);
+      setError(
+        err.response?.data?.msg ||
+        err.message === 'Network Error' ? 'Unable to connect to the server. Please ensure the backend is running at http://localhost:3000.' :
+        'Registration failed. Please try again.'
+      );
     } finally {
       setLoading(false);
     }

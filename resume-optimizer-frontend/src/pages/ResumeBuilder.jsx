@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../styling/ResumeBuilder.css';
 
 const ResumeBuilder = ({ user }) => {
   const [resumes, setResumes] = useState([]);

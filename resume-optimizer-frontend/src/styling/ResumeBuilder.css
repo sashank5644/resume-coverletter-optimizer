@@ -1,0 +1,185 @@
+/* ResumeBuilder.css */
+.resume-builder {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: linear-gradient(180deg, #0a0e1a 0%, #1a2338 100%);
+    color: #e0e7ff;
+    min-height: calc(100vh - 64px); /* Adjust for fixed navbar height */
+  }
+  
+  .resume-builder h1 {
+    color: var(--primary-color, #00d4ff);
+    font-size: 2.5rem;
+    grid-column: 1 / -1;
+    margin-bottom: 1.5rem;
+    justify-self: center;
+    position: relative;
+    padding-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  }
+  
+  .resume-builder h1:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #00d4ff, #ff00cc);
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.7);
+  }
+  
+  .resume-sidebar {
+    background: rgba(20, 30, 55, 0.9);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+    border: 1px solid var(--border-color, rgba(0, 212, 255, 0.3));
+    height: fit-content;
+  }
+  
+  .resume-sidebar h3 {
+    color: var(--primary-color, #00d4ff);
+    margin: 1.5rem 0 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .resume-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .resume-list li {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+    color: #e0e7ff;
+    background: rgba(30, 40, 70, 0.8);
+  }
+  
+  .resume-list li:hover {
+    background: rgba(0, 212, 255, 0.2);
+    transform: translateX(5px);
+  }
+  
+  .resume-list li.active {
+    background: linear-gradient(90deg, #00d4ff, #ff00cc);
+    color: #ffffff;
+  }
+  
+  .resume-editor {
+    background: rgba(20, 30, 55, 0.9);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+    border: 1px solid var(--border-color, rgba(0, 212, 255, 0.3));
+    width: 100%;
+  }
+  
+  .form-group {
+    margin-bottom: 2rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.7rem;
+    color: #99f2ff;
+    font-size: 1rem;
+    text-transform: uppercase;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid var(--border-color, rgba(0, 212, 255, 0.3));
+    border-radius: 10px;
+    font-family: 'Orbitron', 'Segoe UI', sans-serif;
+    font-size: 1rem;
+    color: #ffffff !important; /* Force text visibility */
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    caret-color: var(--primary-color, #00d4ff); /* Visible caret */
+  }
+  
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: var(--primary-color, #00d4ff);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+    outline: none;
+  }
+  
+  .form-group input::placeholder,
+  .form-group textarea::placeholder {
+    color: rgba(153, 242, 255, 0.4); /* Placeholder visibility */
+  }
+  
+  .form-group small {
+    display: block;
+    color: #99f2ff;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+  
+  .resume-actions {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  
+  .optimize-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color, rgba(0, 212, 255, 0.3));
+  }
+  
+  .optimize-section h3 {
+    color: var(--primary-color, #00d4ff);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+  
+  .optimize-section p {
+    color: #99f2ff;
+    margin-bottom: 1rem;
+  }
+  
+  .alert-error,
+  .alert-success {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    grid-column: 1 / -1;
+  }
+  
+  .alert-error {
+    background: rgba(255, 51, 102, 0.2);
+    color: #ff99cc;
+    border: 1px solid rgba(255, 51, 102, 0.5);
+    box-shadow: 0 0 15px rgba(255, 51, 102, 0.3);
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .alert-success {
+    background: rgba(0, 255, 153, 0.2);
+    color: #00ff99;
+    border: 1px solid rgba(0, 255, 153, 0.5);
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.3);
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }

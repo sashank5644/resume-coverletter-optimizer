@@ -1,4 +1,3 @@
-// models/Resume.js
 const mongoose = require('mongoose');
 
 const resumeSchema = new mongoose.Schema({
@@ -7,16 +6,19 @@ const resumeSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  title: String,
+  title: {
+    type: String,
+    required: true
+  },
   content: {
     type: String,
     required: true
   },
   skills: [String],
   experience: [{
-    position: String,  // Changed from title to position
+    position: String,
     company: String,
-    period: String,    // Changed from duration to period
+    period: String,
     description: String
   }],
   education: [{

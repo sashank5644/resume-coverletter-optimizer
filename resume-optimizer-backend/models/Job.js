@@ -1,4 +1,3 @@
-// models/Job.js
 const mongoose = require('mongoose');
 
 const jobSchema = new mongoose.Schema({
@@ -15,17 +14,20 @@ const jobSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Applied', 'Interview', 'Offer', 'Rejected', 'Withdrawn'],
+    enum: ['Saved', 'Applied', 'Interview', 'Offer', 'Rejected', 'Withdrawn'],
     default: 'Applied'
   },
   appliedDate: {
     type: Date,
     default: Date.now
   },
-  jobPostingUrl: {
+  jobDescription: {
     type: String
   },
-  resume: {
+  url: {
+    type: String
+  },
+  resumeUsed: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Resume'
   },
@@ -37,8 +39,15 @@ const jobSchema = new mongoose.Schema({
   notes: {
     type: String
   },
+  contactInfo: {
+    name: String,
+    email: String
+  },
   interviews: [{
-    date: Date,
+    date: {
+      type: Date,
+      default: Date.now
+    },
     type: {
       type: String,
       enum: ['Phone', 'Video', 'In-person']
