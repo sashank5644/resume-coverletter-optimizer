@@ -48,9 +48,10 @@ Built as a full-stack solution using React (Vite) for the frontend, Node.js and 
    * Ensure you have "resume-optimizer-extension" folder locally
 
 # Got to Chrome Extensions on your chrome browser
-    1. chrome://extensions/
-    2. In the top-right corner, toggle the Developer mode switch to On.
-    3. On the Extensions page, click the Load unpacked button in the top left corner (appears after enabling Developer mode).
-    4. In the file explorer window, navigate to the folder containing your extension files and open("resume-optimizer-extension")
+
+1. chrome://extensions/
+2. In the top-right corner, toggle the Developer mode switch to On.
+3. On the Extensions page, click the Load unpacked button in the top left corner (appears after enabling Developer mode).
+4. In the file explorer window, navigate to the folder containing your extension files and open("resume-optimizer-extension")
 
 # Now navigate to any linkedin or indeed job posting and use the extension
