@@ -7,6 +7,9 @@ import '../styling/ResumeBuilder.css';
 // Simple ObjectId validation (MongoDB ObjectId is a 24-character hex string)
 const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
 
+// Define API base URL using import.meta.env
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://resume-coverletter-optimizer.onrender.com';
+
 const ResumeBuilder = () => {
   const { user, token } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -65,10 +68,9 @@ const ResumeBuilder = () => {
     }
 
     try {
-      const res = await axios.get('/api/resumes', {
+      const res = await axios.get(`${API_BASE_URL}/api/resumes`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      // Log the resumes with their IDs for debugging
       console.log('Resumes response:', res.data.map(r => ({ _id: r._id, title: r.title })));
       setResumes(res.data);
       if (resumeIdToSelect) {
@@ -95,8 +97,8 @@ const ResumeBuilder = () => {
   };
 
   const handleSelectResume = (resumeId) => {
-    console.log('handleSelectResume called with resumeId:', resumeId); // Debug log
-    console.log('Current resumes state:', resumes.map(r => ({ _id: r._id, title: r.title }))); // Debug log
+    console.log('handleSelectResume called with resumeId:', resumeId);
+    console.log('Current resumes state:', resumes.map(r => ({ _id: r._id, title: r.title })));
     const selected = resumes.find(r => r._id === resumeId);
     if (!selected) {
       setErrorMsg('Selected resume not found in current list.');
@@ -186,12 +188,12 @@ const ResumeBuilder = () => {
       };
       
       if (currentResume) {
-        await axios.put(`/api/resumes/${currentResume._id}`, resumeData, {
+        await axios.put(`${API_BASE_URL}/api/resumes/${currentResume._id}`, resumeData, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setSuccessMsg('Resume updated successfully');
       } else {
-        await axios.post('/api/resumes', resumeData, {
+        await axios.post(`${API_BASE_URL}/api/resumes`, resumeData, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setSuccessMsg('Resume created successfully');
@@ -218,7 +220,7 @@ const ResumeBuilder = () => {
       }
 
       try {
-        await axios.delete(`/api/resumes/${currentResume._id}`, {
+        await axios.delete(`${API_BASE_URL}/api/resumes/${currentResume._id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setSuccessMsg('Resume deleted successfully');
@@ -257,7 +259,7 @@ const ResumeBuilder = () => {
     setErrorMsg('');
     
     try {
-      const res = await axios.post(`${VITE_API_URL}/api/ai/optimize-resume`, {
+      const res = await axios.post(`${API_BASE_URL}/api/ai/optimize-resume`, {
         resumeContent: formData.content,
         resumeSkills: formData.skills,
         jobDescription
@@ -273,9 +275,8 @@ const ResumeBuilder = () => {
       
       setSuccessMsg('Resume optimized successfully');
     } catch (err) {
-      setErrorMsg('Failed to optimize resume');
-      alert(err);
-      console.error(err);
+      console.error('Optimization error:', err.response?.data || err.message);
+      setErrorMsg(err.response?.data?.error || 'Failed to optimize resume');
       if (err.response?.status === 401) {
         navigate('/login');
       }
@@ -412,8 +413,8 @@ const ResumeBuilder = () => {
                 <textarea
                   id="jobDescription"
                   rows="6"
-                  value={jobDescription} // Bind to state, pre-populated from URL
-                  onChange={(e) => setJobDescription(e.target.value)} // Allow manual edits
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
                   placeholder="Paste the job description here..."
                 ></textarea>
               </div>
