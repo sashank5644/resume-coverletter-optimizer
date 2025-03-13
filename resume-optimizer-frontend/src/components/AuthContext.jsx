@@ -6,17 +6,17 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null); // Initialize from localStorage
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
-    console.log('Initial token from localStorage:', storedToken); // Debug log
+    //console.log('Initial token from localStorage:', storedToken); // Debug log
     if (storedToken) {
       setToken(storedToken);
       axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
       fetchUser();
     } else {
-      console.log('No token found in localStorage, user not logged in');
+      //console.log('No token found in localStorage, user not logged in');
     }
   }, []);
 
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.get(`${apiUrl}/api/users/me`);
       setUser(response.data);
-      console.log('User fetched successfully:', response.data); // Debug log
+      //console.log('User fetched successfully:', response.data); // Debug log
     } catch (err) {
       console.error('Failed to fetch user on refresh:', err.response?.data || err.message);
       localStorage.removeItem('token');
@@ -35,10 +35,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      console.log('Login request to:', `${apiUrl}/api/users/login`, { email, password }); // Debug log
+      //console.log('Login request to:', `${apiUrl}/api/users/login`, { email, password }); // Debug log
       const response = await axios.post(`${apiUrl}/api/users/login`, { email, password });
       const newToken = response.data.token;
-      console.log('Login successful, new token:', newToken); // Debug log
+      //console.log('Login successful, new token:', newToken); // Debug log
       localStorage.setItem('token', newToken);
       setToken(newToken); // Update token in context
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;

@@ -11,7 +11,7 @@ import { AuthContext } from './components/AuthContext';
 import './App.css';
 
 // Set default axios base URL
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
 function App() {
   const { user, logout } = useContext(AuthContext);

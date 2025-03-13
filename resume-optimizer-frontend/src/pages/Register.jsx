@@ -34,8 +34,8 @@ const Register = () => {
     setLoading(true);
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      console.log('Attempting registration to:', `${apiUrl}/api/users/register`); // Debug log
+      const apiUrl = import.meta.env.VITE_API_URL;
+      //console.log('Attempting registration to:', `${apiUrl}/api/users/register`); // Debug log
       const res = await axios.post(`${apiUrl}/api/users/register`, {
         name,
         email,

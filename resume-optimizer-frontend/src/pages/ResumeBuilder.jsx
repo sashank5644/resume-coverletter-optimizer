@@ -40,7 +40,7 @@ const ResumeBuilder = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const jobDesc = urlParams.get('jobDescription');
     const resumeId = urlParams.get('resumeId');
-    console.log('URL Params:', { jobDesc, resumeId }); // Debug log
+    //console.log('URL Params:', { jobDesc, resumeId }); // Debug log
     if (jobDesc) {
       setJobDescription(decodeURIComponent(jobDesc)); // Populate job description from URL
     }
@@ -59,7 +59,7 @@ const ResumeBuilder = () => {
   const fetchResumes = async (resumeIdToSelect = null) => {
     setLoading(true);
     setErrorMsg('');
-    console.log('Fetching resumes, token:', token); // Debug log
+    //console.log('Fetching resumes, token:', token); // Debug log
 
     if (!token) {
       setErrorMsg('Authentication token not found. Please log in.');
@@ -71,7 +71,7 @@ const ResumeBuilder = () => {
       const res = await axios.get(`${API_BASE_URL}/api/resumes`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      console.log('Resumes response:', res.data.map(r => ({ _id: r._id, title: r.title })));
+      //console.log('Resumes response:', res.data.map(r => ({ _id: r._id, title: r.title })));
       setResumes(res.data);
       if (resumeIdToSelect) {
         const selectedResume = res.data.find(r => r._id === resumeIdToSelect);
@@ -97,8 +97,8 @@ const ResumeBuilder = () => {
   };
 
   const handleSelectResume = (resumeId) => {
-    console.log('handleSelectResume called with resumeId:', resumeId);
-    console.log('Current resumes state:', resumes.map(r => ({ _id: r._id, title: r.title })));
+    //console.log('handleSelectResume called with resumeId:', resumeId);
+    //console.log('Current resumes state:', resumes.map(r => ({ _id: r._id, title: r.title })));
     const selected = resumes.find(r => r._id === resumeId);
     if (!selected) {
       setErrorMsg('Selected resume not found in current list.');

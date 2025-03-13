@@ -19,8 +19,8 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      console.log('Attempting login to:', `${apiUrl}/api/users/login`); // Debug log
+      const apiUrl = import.meta.env.VITE_API_URL;
+      //console.log('Attempting login to:', `${apiUrl}/api/users/login`); // Debug log
       await login(email, password);
       navigate('/');
     } catch (err) {
