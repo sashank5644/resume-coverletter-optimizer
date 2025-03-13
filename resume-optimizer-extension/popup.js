@@ -1,390 +1,233 @@
-// Constants
-const API_URL = 'http://localhost:3000'; // Update with your actual backend URL
+document.addEventListener('DOMContentLoaded', () => {
+  const loginSection = document.getElementById('login-section');
+  const mainSection = document.getElementById('main-section');
+  const loginForm = document.getElementById('login-form');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const loginBtn = document.getElementById('login-btn');
+  const loginError = document.getElementById('login-error');
+  const extractJobBtn = document.getElementById('extract-job');
+  const jobDescriptionTextarea = document.getElementById('job-description');
+  const positionInput = document.getElementById('position');
+  const companyInput = document.getElementById('company');
+  const optimizeResumeBtn = document.getElementById('optimize-resume');
+  const logoutBtn = document.getElementById('logout-btn');
+  const createResumeBtn = document.getElementById('create-resume');
+  const resumeSelection = document.getElementById('resume-selection');
+  const messageDiv = document.getElementById('message');
+  const registerLink = document.getElementById('register-link');
 
-// DOM Elements
-const jobStatusEl = document.getElementById('jobStatus');
-const loginStatusEl = document.getElementById('loginStatus');
-const extractBtn = document.getElementById('extractBtn');
-const optimizeBtn = document.getElementById('optimizeBtn');
-const coverLetterBtn = document.getElementById('coverLetterBtn');
-const loginToggleBtn = document.getElementById('loginToggleBtn');
-const loginSection = document.getElementById('loginSection');
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
+  const API_BASE_URL = 'http://localhost:3000'; // Replace with 'https://your-backend-render-url.com' for production
+  const FRONTEND_URL = 'http://localhost:5173'; // Replace with your actual Vercel URL
+  const REGISTER_URL = 'http://localhost:5173/register'; // Replace with your actual registration URL
 
-// State
-let currentJobDescription = null;
-let isLoggedIn = false;
-let userToken = null;
-
-// Initialize the extension
-function init() {
-  checkLoginStatus();
-  checkForJobPage();
-  setupEventListeners();
-}
-
-// Check if user is logged in
-function checkLoginStatus() {
-  chrome.storage.local.get(['userToken'], function(result) {
-    if (result.userToken) {
-      userToken = result.userToken;
-      isLoggedIn = true;
-      loginStatusEl.textContent = 'Logged in successfully';
-      loginStatusEl.classList.add('success');
-      loginToggleBtn.textContent = 'Logout';
-      
-      // Enable buttons if user is logged in
-      if (currentJobDescription) {
-        optimizeBtn.disabled = false;
-        coverLetterBtn.disabled = false;
-      }
-    } else {
-      loginStatusEl.textContent = 'Not logged in. Please log in to use all features.';
-      loginStatusEl.classList.remove('success');
-      loginToggleBtn.textContent = 'Login / Sign Up';
-      optimizeBtn.disabled = true;
-      coverLetterBtn.disabled = true;
+  // Check if user is already logged in
+  chrome.storage.local.get(['authToken'], (result) => {
+    if (result.authToken) {
+      loginSection.style.display = 'none';
+      mainSection.style.display = 'block';
     }
   });
-}
 
-// Check if current page is a job description page
-function checkForJobPage() {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    const currentUrl = tabs[0].url;
-    
-    if (currentUrl.includes('linkedin.com/jobs/') || 
-        currentUrl.includes('indeed.com/viewjob') ||
-        currentUrl.includes('indeed.com/job/')) {
-      
-      jobStatusEl.textContent = 'Job description page detected!';
-      jobStatusEl.classList.add('success');
-      extractBtn.disabled = false;
-      
-      // Check if we already extracted this job
-      chrome.storage.local.get(['lastExtractedUrl', 'lastJobDescription'], function(result) {
-        if (result.lastExtractedUrl === currentUrl && result.lastJobDescription) {
-          currentJobDescription = result.lastJobDescription;
-          jobStatusEl.textContent = 'Job description already extracted!';
-          
-          if (isLoggedIn) {
-            optimizeBtn.disabled = false;
-            coverLetterBtn.disabled = false;
+  // Login
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    loginBtn.disabled = true;
+    loginError.style.display = 'none';
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      const token = data.token;
+      chrome.storage.local.set({ authToken: token }, () => {
+        loginSection.style.display = 'none';
+        mainSection.style.display = 'block';
+        showMessage('Login successful!', 'success');
+      });
+    } catch (err) {
+      loginError.textContent = err.message === 'Network Error'
+        ? 'Unable to connect to the server. Please ensure the backend is running at http://localhost:3000.'
+        : 'Login failed. Please check your credentials and try again.';
+      loginError.style.display = 'block';
+    } finally {
+      loginBtn.disabled = false;
+    }
+  });
+
+  // Register link handler
+  registerLink.addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent default anchor behavior
+    chrome.tabs.create({ url: REGISTER_URL }, () => {
+      showMessage('Redirecting to registration page...', 'info');
+    });
+  });
+
+  // Logout
+  logoutBtn.addEventListener('click', () => {
+    chrome.storage.local.remove(['authToken'], () => {
+      loginSection.style.display = 'block';
+      mainSection.style.display = 'none';
+      emailInput.value = '';
+      passwordInput.value = '';
+      jobDescriptionTextarea.value = '';
+      positionInput.value = '';
+      companyInput.value = '';
+      createResumeBtn.style.display = 'none';
+      optimizeResumeBtn.style.display = 'none';
+      resumeSelection.style.display = 'none';
+      showMessage('Logged out successfully!', 'success');
+    });
+  });
+
+  // Fetch resumes from backend
+  async function fetchResumes() {
+    const token = (await chrome.storage.local.get(['authToken'])).authToken;
+    if (!token) {
+      showMessage('Please log in to fetch resumes.', 'error');
+      return [];
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/resumes`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch resumes');
+      }
+      console.log('Fetched resumes:', data); // Debug log
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching resumes:', error);
+      showMessage('Failed to fetch resumes.', 'error');
+      return [];
+    }
+  }
+
+  // Handle resume check and UI update after extraction
+  async function handleResumeCheck() {
+    const resumes = await fetchResumes();
+    console.log('Resumes length in handleResumeCheck:', resumes.length); // Debug log
+    // Toggle resume selection section based on resumes
+    resumeSelection.style.display = resumes.length > 0 ? 'block' : 'none';
+
+    if (resumes.length > 0) {
+      // Show Optimize Resume button if there are resumes
+      createResumeBtn.style.display = 'none';
+      optimizeResumeBtn.style.display = 'block';
+      console.log('Setting optimizeResumeBtn display to block'); // Debug log
+      showMessage('Job description extracted. Click "Optimize Resume" to proceed.', 'success');
+    } else {
+      // Show Create Resume button and message if no resumes
+      createResumeBtn.style.display = 'block';
+      optimizeResumeBtn.style.display = 'none';
+      resumeSelection.style.display = 'none'; // Ensure resume selection is hidden
+      showMessage('Please create a resume before optimizing.', 'info');
+    }
+  }
+
+  // Extract job description using backend proxy
+  extractJobBtn.addEventListener('click', async () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      if (!tabs || !tabs[0]) {
+        showMessage('No active tab found.', 'error');
+        return;
+      }
+
+      const tabId = tabs[0].id;
+      console.log('Sending message to tab:', tabId);
+
+      chrome.tabs.sendMessage(tabId, { action: 'getPageContent' }, async (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Message sending error:', chrome.runtime.lastError.message);
+          showMessage('Failed to get page content.', 'error');
+          return;
+        }
+
+        if (response && response.content) {
+          try {
+            const res = await fetch(`${API_BASE_URL}/api/extract-job-details`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: response.content })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+              throw new Error(data.error || 'Failed to extract job details');
+            }
+
+            const { position, company, location, jobDescription, qualifications, salary, jobType, duration, date } = data;
+            const formattedDescription = `
+              Position: ${position}
+              Company: ${company}
+              Location: ${location}
+              Duration: ${duration}
+              Date: ${date}
+              Salary: ${salary}
+              Job Type: ${jobType}
+
+              Job Description:
+              ${jobDescription}
+
+              Qualifications:
+              ${qualifications}
+            `.trim();
+
+            jobDescriptionTextarea.value = formattedDescription;
+            positionInput.value = position;
+            companyInput.value = company;
+            await handleResumeCheck(); // Check resumes and update UI
+          } catch (error) {
+            console.error('Backend API error:', error);
+            showMessage('Failed to extract job description.', 'error');
           }
+        } else {
+          showMessage('No content found on this page.', 'error');
         }
       });
-      
-    } else {
-      jobStatusEl.textContent = 'Not a job description page. Navigate to a LinkedIn or Indeed job posting.';
-      jobStatusEl.classList.remove('success');
-      jobStatusEl.classList.add('error');
-      extractBtn.disabled = true;
-    }
-  });
-}
-
-// Set up event listeners
-function setupEventListeners() {
-  // Extract button
-  extractBtn.addEventListener('click', function() {
-    extractJobDescription();
-  });
-  
-  // Optimize Resume button
-  optimizeBtn.addEventListener('click', function() {
-    if (!isLoggedIn) {
-      alert('Please log in to use this feature.');
-      return;
-    }
-    
-    if (!currentJobDescription) {
-      alert('Please extract a job description first.');
-      return;
-    }
-    
-    chrome.storage.local.get(['userToken'], function(result) {
-      if (result.userToken) {
-        // Instead of opening the dashboard, open the job tracker page with job details in the URL
-        const jobData = {
-          jobDescription: encodeURIComponent(currentJobDescription),
-          position: extractPositionFromDescription(currentJobDescription) || 'Unknown Position', // Helper function to parse position
-          company: extractCompanyFromDescription(currentJobDescription) || 'Unknown Company',   // Helper function to parse company
-          appliedDate: new Date().toISOString().split('T')[0] // Current date
-        };
-        
-        // Open the job tracker page with query parameters
-        chrome.tabs.create({
-          url: `http://localhost:5173/jobs?jobDescription=${jobData.jobDescription}&position=${encodeURIComponent(jobData.position)}&company=${encodeURIComponent(jobData.company)}&appliedDate=${jobData.appliedDate}&token=${result.userToken}`
-        });
-      }
     });
   });
 
-  function extractPositionFromDescription(description) {
-    // Simple regex to find position (e.g., "Software Engineer" or similar)
-    const positionMatch = description.match(/(\w+\s+Engineer|\w+\s+Developer|\w+\s+Manager)/i);
-    return positionMatch ? positionMatch[0] : 'Unknown Position';
+  // Create Resume button handler
+  createResumeBtn.addEventListener('click', () => {
+    const redirectUrl = `${FRONTEND_URL}/resumes`;
+    chrome.tabs.create({ url: redirectUrl }, () => {
+      showMessage('Redirecting to Resume Builder...', 'info');
+    });
+  });
+
+  // Optimize Resume button handler
+  optimizeResumeBtn.addEventListener('click', () => {
+    const jobDescription = encodeURIComponent(jobDescriptionTextarea.value);
+    const redirectUrl = `${FRONTEND_URL}/resumes?jobDescription=${jobDescription}`;
+    chrome.tabs.create({ url: redirectUrl }, () => {
+      showMessage('Redirecting to Resume Builder...', 'info');
+    });
+  });
+
+  // Helper function to show messages
+  function showMessage(message, type) {
+    messageDiv.textContent = message;
+    messageDiv.className = `message ${type}`;
+    setTimeout(() => {
+      messageDiv.textContent = '';
+      messageDiv.className = 'message';
+    }, 3000);
   }
-  
-  function extractCompanyFromDescription(description) {
-    // Simple regex to find company name (e.g., "Tech Inc." or similar)
-    const companyMatch = description.match(/(?:at\s+)?([A-Z][a-zA-Z\s]+(?:Inc\.|Corp\.|Co\.))/i);
-    return companyMatch ? companyMatch[1] : 'Unknown Company';
-  }
-  
-  // Cover Letter button
-  coverLetterBtn.addEventListener('click', function() {
-    if (!isLoggedIn) {
-      alert('Please log in to use this feature.');
-      return;
-    }
-    
-    if (!currentJobDescription) {
-      alert('Please extract a job description first.');
-      return;
-    }
-    
-    chrome.storage.local.get(['userToken'], function(result) {
-      if (result.userToken) {
-        // Open the web app in a new tab
-        chrome.tabs.create({
-          url: `https://localhost:5173/?jobs?jobDescription=${encodeURIComponent(currentJobDescription)}&token=${result.userToken}`
-        });
-      }
-    });
-  });
-  
-  // Login/Logout toggle
-  loginToggleBtn.addEventListener('click', function() {
-    if (isLoggedIn) {
-      // Logout functionality
-      chrome.storage.local.remove(['userToken'], function() {
-        isLoggedIn = false;
-        userToken = null;
-        checkLoginStatus();
-      });
-    } else {
-      // Show login form
-      loginSection.style.display = loginSection.style.display === 'block' ? 'none' : 'block';
-    }
-  });
-  
-  // Login button
-  loginBtn.addEventListener('click', function() {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-    
-    if (!email || !password) {
-      alert('Please enter both email and password.');
-      return;
-    }
-    
-    loginStatusEl.textContent = 'Logging in...';
-    
-    fetch(`${API_URL}/api/users/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.token) {
-        chrome.storage.local.set({ userToken: data.token }, function() {
-          userToken = data.token;
-          isLoggedIn = true;
-          loginSection.style.display = 'none';
-          checkLoginStatus();
-        });
-      } else {
-        loginStatusEl.textContent = 'Login failed. Check your credentials.';
-        loginStatusEl.classList.add('error');
-      }
-    })
-    .catch(error => {
-      loginStatusEl.textContent = 'Error connecting to server.';
-      loginStatusEl.classList.add('error');
-      console.error('Login error:', error);
-    });
-  });
-  
-  // Signup button
-  signupBtn.addEventListener('click', function() {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-    
-    if (!email || !password) {
-      alert('Please enter both email and password.');
-      return;
-    }
-    
-    loginStatusEl.textContent = 'Creating account...';
-    
-    fetch(`${API_URL}/api/users/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.token) {
-        chrome.storage.local.set({ userToken: data.token }, function() {
-          userToken = data.token;
-          isLoggedIn = true;
-          loginSection.style.display = 'none';
-          checkLoginStatus();
-        });
-      } else {
-        loginStatusEl.textContent = 'Signup failed. ' + (data.message || '');
-        loginStatusEl.classList.add('error');
-      }
-    })
-    .catch(error => {
-      loginStatusEl.textContent = 'Error connecting to server.';
-      loginStatusEl.classList.add('error');
-      console.error('Signup error:', error);
-    });
-  });
-}
-
-// Extract job description from the current page
-function extractJobDescription() {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    const currentUrl = tabs[0].url;
-    jobStatusEl.textContent = 'Extracting job description...';
-    
-    // First check if the content script is already there
-    chrome.tabs.sendMessage(tabs[0].id, {action: 'ping'}, function(response) {
-      if (chrome.runtime.lastError || !response) {
-        console.log('Content script not yet loaded, injecting manually');
-        
-        // Manually inject the content script
-        chrome.scripting.executeScript({
-          target: {tabId: tabs[0].id},
-          files: ['content.js']
-        }).then(() => {
-          console.log('Content script injected successfully');
-          // Wait a moment for the script to initialize
-          setTimeout(() => {
-            sendExtractMessage(tabs[0].id, currentUrl);
-          }, 300);
-        }).catch(err => {
-          jobStatusEl.textContent = 'Error injecting script: ' + err.message;
-          jobStatusEl.classList.add('error');
-        });
-      } else {
-        // Content script is already there, send the extraction message
-        sendExtractMessage(tabs[0].id, currentUrl);
-      }
-    });
-  });
-}
-
-function sendExtractMessage(tabId, currentUrl) {
-  chrome.tabs.sendMessage(
-    tabId,
-    { action: 'extractJobDescription' },
-    function(response) {
-      if (chrome.runtime.lastError) {
-        jobStatusEl.textContent = 'Error: ' + chrome.runtime.lastError.message;
-        jobStatusEl.classList.add('error');
-        return;
-      }
-      
-      if (response && response.jobDescription) {
-        currentJobDescription = response.jobDescription;
-        
-        // Save to local storage
-        chrome.storage.local.set({
-          lastExtractedUrl: currentUrl,
-          lastJobDescription: response.jobDescription
-        });
-        
-        jobStatusEl.textContent = 'Job description extracted successfully!';
-        jobStatusEl.classList.add('success');
-        
-        // Enable buttons if user is logged in
-        if (isLoggedIn) {
-          optimizeBtn.disabled = false;
-          coverLetterBtn.disabled = false;
-        }
-      } else {
-        jobStatusEl.textContent = 'Failed to extract job description. Try again.';
-        jobStatusEl.classList.add('error');
-      }
-    }
-  );
-}
-
-// Client-side extraction fallback
-function useClientSideExtraction(tabId, currentUrl) {
-  chrome.tabs.sendMessage(
-    tabId,
-    { action: 'extractJobDescription' },
-    function(response) {
-      if (chrome.runtime.lastError) {
-        jobStatusEl.textContent = 'Error1: ' + chrome.runtime.lastError.message;
-        jobStatusEl.classList.add('error');
-        return;
-      }
-      
-      if (response && response.jobDescription) {
-        // Add this missing success code:
-        currentJobDescription = response.jobDescription;
-        
-        // Save to local storage
-        chrome.storage.local.set({
-          lastExtractedUrl: currentUrl,
-          lastJobDescription: response.jobDescription
-        });
-        
-        jobStatusEl.textContent = 'Job description extracted successfully!';
-        jobStatusEl.classList.add('success');
-        
-        // Enable buttons if user is logged in
-        if (isLoggedIn) {
-          optimizeBtn.disabled = false;
-          coverLetterBtn.disabled = false;
-        }
-      } else {
-        jobStatusEl.textContent = 'Failed to extract job description. Try again.';
-        jobStatusEl.classList.add('error');
-      }
-    }
-  );
-}
-
-// This function is now a fallback and only used when server-side extraction fails
-function saveJobToDatabase(jobDescription, jobUrl, jobTitle, company) {
-  fetch(`${API_URL}/api/jobs`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${userToken}`
-    },
-    body: JSON.stringify({
-      jobDescription,
-      jobUrl,
-      jobTitle: jobTitle || 'Unknown Title',
-      company: company || 'Unknown Company',
-      status: 'Saved'
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log('Job saved to database:', data);
-  })
-  .catch(error => {
-    console.error('Error saving job:', error);
-  });
-}
-
-
-// Initialize the popup
-document.addEventListener('DOMContentLoaded', init);
+});

@@ -1,8 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { AuthContext } from '../components/AuthContext';
 import '../styling/ResumeBuilder.css';
 
-const ResumeBuilder = ({ user }) => {
+// Simple ObjectId validation (MongoDB ObjectId is a 24-character hex string)
+const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
+
+const ResumeBuilder = () => {
+  const { user, token } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [resumes, setResumes] = useState([]);
   const [currentResume, setCurrentResume] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,31 +27,90 @@ const ResumeBuilder = ({ user }) => {
     experience: ''
   });
 
-  // Load resumes on component mount
+  // Load job description and resume ID from URL parameters when token is available
   useEffect(() => {
-    fetchResumes();
-  }, []);
+    if (!token) {
+      setErrorMsg('Authentication token not found. Please log in.');
+      navigate('/login');
+      return;
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobDesc = urlParams.get('jobDescription');
+    const resumeId = urlParams.get('resumeId');
+    console.log('URL Params:', { jobDesc, resumeId }); // Debug log
+    if (jobDesc) {
+      setJobDescription(decodeURIComponent(jobDesc)); // Populate job description from URL
+    }
+    if (resumeId) {
+      if (!isValidObjectId(resumeId)) {
+        setErrorMsg('Invalid resume ID format.');
+        navigate('/resumes', { replace: true }); // Clear invalid query params
+        return;
+      }
+      fetchResumes(resumeId); // Fetch and select the specific resume
+    } else {
+      fetchResumes(); // Fetch all resumes if no resumeId
+    }
+  }, [token, navigate]);
 
-  const fetchResumes = async () => {
+  const fetchResumes = async (resumeIdToSelect = null) => {
     setLoading(true);
     setErrorMsg('');
-    
+    console.log('Fetching resumes, token:', token); // Debug log
+
+    if (!token) {
+      setErrorMsg('Authentication token not found. Please log in.');
+      navigate('/login');
+      return;
+    }
+
     try {
-      const res = await axios.get('/api/resumes');
+      const res = await axios.get('/api/resumes', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      // Log the resumes with their IDs for debugging
+      console.log('Resumes response:', res.data.map(r => ({ _id: r._id, title: r.title })));
       setResumes(res.data);
+      if (resumeIdToSelect) {
+        const selectedResume = res.data.find(r => r._id === resumeIdToSelect);
+        if (selectedResume) {
+          handleSelectResume(selectedResume._id);
+        } else {
+          setErrorMsg('Selected resume not found.');
+          navigate('/resumes', { replace: true }); // Clear invalid query params
+        }
+      }
     } catch (err) {
-      console.error('Error loading resumes:', err);
-      const errorMessage = err.response?.data?.error || 
-        err.response?.statusText ||
-        'Failed to load resumes. Please try again later.';
+      console.error('Error loading resumes:', err.response?.data || err.message);
+      const errorMessage = err.response?.data?.msg === 'Token is not valid' || err.response?.status === 401
+        ? 'Session expired. Please log in again.'
+        : err.response?.data?.error || err.response?.statusText || err.message || 'Failed to load resumes. Please try again later.';
       setErrorMsg(errorMessage);
+      if (err.response?.status === 401) {
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleSelectResume = (resumeId) => {
+    console.log('handleSelectResume called with resumeId:', resumeId); // Debug log
+    console.log('Current resumes state:', resumes.map(r => ({ _id: r._id, title: r.title }))); // Debug log
     const selected = resumes.find(r => r._id === resumeId);
+    if (!selected) {
+      setErrorMsg('Selected resume not found in current list.');
+      setCurrentResume(null);
+      setFormData({
+        title: '',
+        content: '',
+        skills: '',
+        education: '',
+        experience: ''
+      });
+      return;
+    }
+
     setCurrentResume(selected);
     setFormData({
       title: selected.title,
@@ -84,17 +150,20 @@ const ResumeBuilder = ({ user }) => {
     setErrorMsg('');
     setSuccessMsg('');
     
+    if (!token) {
+      setErrorMsg('Authentication token not found. Please log in.');
+      navigate('/login');
+      return;
+    }
+
     try {
-      // Parse skills, education and experience
       const skills = formData.skills.split(',').map(skill => skill.trim());
-      
       const education = formData.education.split('\n')
         .filter(line => line.trim())
         .map(edu => {
           const [degree, institution, year] = edu.split(',').map(item => item.trim());
           return { degree, institution, year };
         });
-        
       const experience = [];
       const expEntries = formData.experience.split('\n\n');
       for (const entry of expEntries) {
@@ -117,29 +186,41 @@ const ResumeBuilder = ({ user }) => {
       };
       
       if (currentResume) {
-        // Update existing resume - now using REST-style URL
-        await axios.put(`/api/resumes/${currentResume._id}`, resumeData);
+        await axios.put(`/api/resumes/${currentResume._id}`, resumeData, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         setSuccessMsg('Resume updated successfully');
       } else {
-        // Create new resume
-        await axios.post('/api/resumes', resumeData);
+        await axios.post('/api/resumes', resumeData, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         setSuccessMsg('Resume created successfully');
       }
       
       fetchResumes();
     } catch (err) {
-      console.error('Resume save error:', err);
+      console.error('Resume save error:', err.response?.data || err.message);
       setErrorMsg(err.response?.data?.error || 'Error saving resume');
+      if (err.response?.status === 401) {
+        navigate('/login');
+      }
     }
   };
   
-  // Update handleDelete to use the new REST endpoint
   const handleDelete = async () => {
     if (!currentResume) return;
     
     if (window.confirm('Are you sure you want to delete this resume?')) {
+      if (!token) {
+        setErrorMsg('Authentication token not found. Please log in.');
+        navigate('/login');
+        return;
+      }
+
       try {
-        await axios.delete(`/api/resumes/${currentResume._id}`);
+        await axios.delete(`/api/resumes/${currentResume._id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         setSuccessMsg('Resume deleted successfully');
         setCurrentResume(null);
         setFormData({
@@ -151,8 +232,11 @@ const ResumeBuilder = ({ user }) => {
         });
         fetchResumes();
       } catch (err) {
-        console.error('Resume deletion error:', err);
+        console.error('Resume deletion error:', err.response?.data || err.message);
         setErrorMsg(err.response?.data?.error || 'Failed to delete resume');
+        if (err.response?.status === 401) {
+          navigate('/login');
+        }
       }
     }
   };
@@ -163,6 +247,12 @@ const ResumeBuilder = ({ user }) => {
       return;
     }
     
+    if (!token) {
+      setErrorMsg('Authentication token not found. Please log in.');
+      navigate('/login');
+      return;
+    }
+
     setOptimizing(true);
     setErrorMsg('');
     
@@ -171,6 +261,8 @@ const ResumeBuilder = ({ user }) => {
         resumeContent: formData.content,
         resumeSkills: formData.skills,
         jobDescription
+      }, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       
       setFormData({
@@ -184,6 +276,9 @@ const ResumeBuilder = ({ user }) => {
       setErrorMsg('Failed to optimize resume');
       alert(err);
       console.error(err);
+      if (err.response?.status === 401) {
+        navigate('/login');
+      }
     } finally {
       setOptimizing(false);
     }
@@ -284,8 +379,7 @@ const ResumeBuilder = ({ user }) => {
               rows="6"
               value={formData.experience}
               onChange={handleChange}
-              placeholder="Software Developer, Example Corp, 2020-2022
-Led development of customer-facing web application using React and Node.js."
+              placeholder="Software Developer, Example Corp, 2020-2022\nLed development of customer-facing web application using React and Node.js."
             ></textarea>
             <small>Format: Position, Company, Period<br/>Description</small>
           </div>
@@ -303,30 +397,36 @@ Led development of customer-facing web application using React and Node.js."
           </div>
         </form>
         
-        {currentResume && (
-          <div className="optimize-section">
-            <h3>AI Resume Optimization</h3>
-            <p>Paste a job description below to optimize your resume for this specific position</p>
-            
-            <div className="form-group">
-              <label htmlFor="jobDescription">Job Description</label>
-              <textarea
-                id="jobDescription"
-                rows="6"
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                placeholder="Paste the job description here..."
-              ></textarea>
-            </div>
-            
-            <button 
-              className="btn-primary" 
-              onClick={handleOptimize}
-              disabled={optimizing}
-            >
-              {optimizing ? 'Optimizing...' : 'Optimize Resume'}
-            </button>
+        {jobDescription && !currentResume ? (
+          <div className="alert-info">
+            Please select a resume from the sidebar to optimize it for the extracted job description.
           </div>
+        ) : (
+          currentResume && (
+            <div className="optimize-section">
+              <h3>AI Resume Optimization</h3>
+              <p>Paste a job description below to optimize your resume for this specific position</p>
+              
+              <div className="form-group">
+                <label htmlFor="jobDescription">Job Description</label>
+                <textarea
+                  id="jobDescription"
+                  rows="6"
+                  value={jobDescription} // Bind to state, pre-populated from URL
+                  onChange={(e) => setJobDescription(e.target.value)} // Allow manual edits
+                  placeholder="Paste the job description here..."
+                ></textarea>
+              </div>
+              
+              <button 
+                className="btn-primary" 
+                onClick={handleOptimize}
+                disabled={optimizing}
+              >
+                {optimizing ? 'Optimizing...' : 'Optimize Resume'}
+              </button>
+            </div>
+          )
         )}
       </div>
     </div>
