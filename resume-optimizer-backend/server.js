@@ -12,7 +12,7 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: ['http://localhost:5173', 'resume-coverletter-optimizer.vercel.app'], // Update with your actual Vercel URL
+  origin: ['http://localhost:5173', 'https://resume-coverletter-optimizer.vercel.app'], // Update with your actual Vercel URL
   credentials: true,
 })); // Enable CORS for all routes
 
