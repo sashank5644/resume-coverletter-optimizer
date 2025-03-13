@@ -43,6 +43,7 @@ Built as a full-stack solution using React (Vite) for the frontend, Node.js and 
 # How to Use
 
 # Clone the repository
+
     * Ensure you have "resume-optimizer-extension" folder locally
 
 # Got to Chrome Extensions on your chrome browser
