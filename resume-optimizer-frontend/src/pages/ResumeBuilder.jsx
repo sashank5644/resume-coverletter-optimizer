@@ -257,7 +257,7 @@ const ResumeBuilder = () => {
     setErrorMsg('');
     
     try {
-      const res = await axios.post('http://localhost:3000/api/ai/optimize-resume', {
+      const res = await axios.post(`${VITE_API_URL}/api/ai/optimize-resume`, {
         resumeContent: formData.content,
         resumeSkills: formData.skills,
         jobDescription

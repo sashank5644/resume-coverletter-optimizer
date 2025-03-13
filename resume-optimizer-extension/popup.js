@@ -165,6 +165,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Utility function to split content into chunks for API processing
+  function processJobDescription(content) {
+    // Extract key information even from large job descriptions
+    const extractKeyInfo = (text) => {
+      // Simple extraction based on common patterns in job descriptions
+      const patterns = {
+        position: /position\s*:\s*([^:\n]+)/i,
+        company: /company\s*:\s*([^:\n]+)/i,
+        location: /location\s*:\s*([^:\n]+)/i,
+        jobType: /(full[-\s]time|part[-\s]time|contract|freelance|temporary|permanent)/i,
+        qualifications: /(qualifications|requirements|skills)[\s\n:]+([^#]+?)((?=\n\s*[A-Z])|$)/i,
+        description: /(description|responsibilities|duties|overview)[\s\n:]+([^#]+?)((?=\n\s*[A-Z])|$)/i
+      };
+      
+      const results = {};
+      for (const [key, pattern] of Object.entries(patterns)) {
+        const match = text.match(pattern);
+        if (match) {
+          results[key] = key === 'qualifications' || key === 'description' ? match[2].trim() : match[1].trim();
+        } else {
+          results[key] = key === 'qualifications' || key === 'description' ? 'Not specified' : 'Not specified';
+        }
+      }
+      
+      return results;
+    };
+    
+    // Process the content to extract key information
+    const keyInfo = extractKeyInfo(content);
+    
+    // Create a more concise job description with the essential information
+    const maxApiSize = 3000; // Maximum size for API request
+    const trimmedDescription = keyInfo.description.length > 1000 ? 
+      keyInfo.description.substring(0, 1000) + '... (trimmed)' : 
+      keyInfo.description;
+    
+    const trimmedQualifications = keyInfo.qualifications.length > 1000 ? 
+      keyInfo.qualifications.substring(0, 1000) + '... (trimmed)' : 
+      keyInfo.qualifications;
+    
+    // Combine the information into a structured format
+    const processedContent = {
+      position: keyInfo.position,
+      company: keyInfo.company,
+      location: keyInfo.location || 'Not specified',
+      jobType: keyInfo.jobType || 'Not specified',
+      description: trimmedDescription,
+      qualifications: trimmedQualifications,
+      originalLength: content.length,
+      wasTrimmed: content.length > maxApiSize
+    };
+    
+    return processedContent;
+  }
+
   // Extract job description using backend proxy
   extractJobBtn.addEventListener('click', async () => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -175,47 +230,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const tabId = tabs[0].id;
       console.log('Sending message to tab:', tabId);
+      
+      extractJobBtn.disabled = true;
+      extractJobBtn.textContent = 'Extracting...';
 
       try {
         // Use the retry mechanism to send the message
         const response = await sendMessageWithRetry(tabId, { action: 'getPageContent' });
 
         if (response && response.content) {
-          // Check the size of the content before sending
-          const maxPayloadSize = 5000; // Adjust based on server limits
-          let contentToSend = response.content;
-          if (contentToSend.length > maxPayloadSize) {
-            contentToSend = contentToSend.substring(0, maxPayloadSize) + '... [Truncated due to size limit]';
-            console.warn(`Content truncated to ${maxPayloadSize} characters to avoid payload size issues.`);
-          }
-
           try {
-            const res = await fetch(`${API_BASE_URL}/api/extract-job-details`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content: contentToSend })
-            });
-
-            // Check for 413 status code
-            if (res.status === 413) {
-              throw new Error('Payload too large. The job description is too long to process. Try a shorter description.');
+            // Process job description locally to avoid payload size issues
+            const processedJobData = processJobDescription(response.content);
+            console.log('Processed job data:', processedJobData);
+            
+            // Check if we need to use the API or process locally based on size
+            let extractedData;
+            
+            if (!processedJobData.wasTrimmed) {
+              // Use the API for smaller content
+              const res = await fetch(`${API_BASE_URL}/api/extract-job-details`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: response.content })
+              });
+              
+              if (!res.ok) {
+                if (res.status === 413) {
+                  // Fallback to local processing if payload is too large
+                  extractedData = {
+                    position: processedJobData.position,
+                    company: processedJobData.company,
+                    location: processedJobData.location,
+                    jobDescription: processedJobData.description,
+                    qualifications: processedJobData.qualifications,
+                    salary: 'Not specified',
+                    jobType: processedJobData.jobType,
+                    duration: 'Not specified',
+                    date: new Date().toLocaleDateString()
+                  };
+                } else {
+                  const errorData = await res.json();
+                  throw new Error(errorData.error || 'Failed to extract job details');
+                }
+              } else {
+                // Use API response for smaller content
+                extractedData = await res.json();
+              }
+            } else {
+              // Use local processing for larger content
+              extractedData = {
+                position: processedJobData.position,
+                company: processedJobData.company,
+                location: processedJobData.location,
+                jobDescription: processedJobData.description,
+                qualifications: processedJobData.qualifications,
+                salary: 'Not specified',
+                jobType: processedJobData.jobType,
+                duration: 'Not specified',
+                date: new Date().toLocaleDateString()
+              };
             }
 
-            // Check if the response is JSON
-            const contentType = res.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-              const text = await res.text();
-              console.error('Non-JSON response received:', text);
-              throw new Error('Server returned an invalid response (not JSON). Please try again later.');
-            }
-
-            const data = await res.json();
-
-            if (!res.ok) {
-              throw new Error(data.error || 'Failed to extract job details');
-            }
-
-            const { position, company, location, jobDescription, qualifications, salary, jobType, duration, date } = data;
+            const { position, company, location, jobDescription, qualifications, salary, jobType, duration, date } = extractedData;
             const formattedDescription = `
               Position: ${position}
               Company: ${company}
@@ -230,12 +307,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
               Qualifications:
               ${qualifications}
+              
+              ${processedJobData.wasTrimmed ? '(Note: This job description was truncated due to its size)' : ''}
             `.trim();
 
             jobDescriptionTextarea.value = formattedDescription;
             positionInput.value = position;
             companyInput.value = company;
             await handleResumeCheck(); // Check resumes and update UI
+            
+            // Show a warning if content was trimmed
+            if (processedJobData.wasTrimmed) {
+              showMessage('Job description was too large and has been summarized.', 'warning', 5000);
+            } else {
+              showMessage('Job description extracted successfully!', 'success');
+            }
+            
           } catch (error) {
             console.error('Backend API error:', error.message);
             showMessage(error.message || 'Failed to extract job description.', 'error');
@@ -251,6 +338,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           showMessage('Failed to get page content: ' + error.message, 'error');
         }
+      } finally {
+        extractJobBtn.disabled = false;
+        extractJobBtn.textContent = 'Extract Job Description';
       }
     });
   });
@@ -273,12 +363,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Helper function to show messages
-  function showMessage(message, type) {
+  function showMessage(message, type, duration = 3000) {
     messageDiv.textContent = message;
     messageDiv.className = `message ${type}`;
     setTimeout(() => {
       messageDiv.textContent = '';
       messageDiv.className = 'message';
-    }, 3000);
+    }, duration);
   }
 });
