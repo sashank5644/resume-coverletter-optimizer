@@ -37,7 +37,7 @@ app.use('/api/users', require('./routes/users'));
 // New endpoint to extract job details
 app.post('/api/extract-job-details', async (req, res) => {
   const { content } = req.body;
-  console.log('Job description received (length):', content ? content.length : 0); // Log content length for debugging
+  //console.log('Job description received (length):', content ? content.length : 0); // Log content length for debugging
 
   if (!content) {
     return res.status(400).json({ error: 'Content is required' });

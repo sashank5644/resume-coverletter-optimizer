@@ -40,7 +40,7 @@ exports.optimizeResume = async (req, res) => {
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
 
-    console.log('Gemini raw response:', responseText); // Debug log for full response
+    //console.log('Gemini raw response:', responseText); // Debug log for full response
 
     // Parse the response with robust handling
     let optimizedContent = '';
@@ -115,7 +115,7 @@ exports.generateCoverLetter = async (req, res) => {
       Provide the cover letter in plain text format.
     `;
 
-    console.log('Sending prompt to Gemini:', prompt); // Debug log
+    //console.log('Sending prompt to Gemini:', prompt); // Debug log
 
     const result = await model.generateContent(prompt);
     const coverLetter = result.response.text();

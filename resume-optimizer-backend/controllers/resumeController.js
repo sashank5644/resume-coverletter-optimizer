@@ -2,9 +2,9 @@ const Resume = require('../models/Resume');
 
 exports.getResumes = async (req, res) => {
   try {
-    console.log('Fetching resumes for user:', req.user.id); // Debug log
+    //console.log('Fetching resumes for user:', req.user.id); // Debug log
     const resumes = await Resume.find({ user: req.user.id });
-    console.log('Resumes fetched:', resumes); // Debug log
+    //console.log('Resumes fetched:', resumes); // Debug log
     res.json(resumes);
   } catch (error) {
     console.error('Error fetching resumes:', error.message, error.stack); // Detailed error log
@@ -91,9 +91,9 @@ exports.deleteResume = async (req, res) => {
 
 exports.getResumeCount = async (req, res) => {
   try {
-    console.log('Fetching resume count for user:', req.user.id); // Debug log
+    //console.log('Fetching resume count for user:', req.user.id); // Debug log
     const count = await Resume.countDocuments({ user: req.user.id });
-    console.log('Resume count:', count); // Debug log
+    //console.log('Resume count:', count); // Debug log
     res.json({ count });
   } catch (error) {
     console.error('Error fetching resume count:', error.message, error.stack); // Detailed error log

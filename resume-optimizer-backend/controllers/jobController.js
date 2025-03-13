@@ -4,7 +4,7 @@ const Job = require('../models/Job');
 exports.getJobs = async (req, res) => {
   try {
     const jobs = await Job.find({ user: req.user.id }).sort({ appliedDate: -1 });
-    console.log('Fetched jobs for user:', req.user.id, 'Count:', jobs.length);
+    //console.log('Fetched jobs for user:', req.user.id, 'Count:', jobs.length);
     res.json(jobs);
   } catch (error) {
     console.error('Error fetching jobs:', error);
@@ -21,7 +21,7 @@ exports.getJobById = async (req, res) => {
     if (job.user.toString() !== req.user.id) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
-    console.log('Fetched job by ID:', job);
+    //console.log('Fetched job by ID:', job);
     res.json(job);
   } catch (error) {
     console.error('Error fetching job:', error);
@@ -51,7 +51,7 @@ exports.createJob = async (req, res) => {
       user: req.user.id
     });
     await job.save();
-    console.log('Job saved successfully:', job);
+    //console.log('Job saved successfully:', job);
     res.status(201).json(job);
   } catch (error) {
     console.error('Error creating job:', error);
@@ -84,7 +84,7 @@ exports.updateJob = async (req, res) => {
     job.interviews = interviews || job.interviews || []; // Update interviews array
 
     await job.save();
-    console.log('Job updated successfully:', job);
+    //console.log('Job updated successfully:', job);
     res.json(job);
   } catch (error) {
     console.error('Error updating job:', error);
@@ -120,7 +120,7 @@ exports.getJobStats = async (req, res) => {
       { $group: { _id: null, totalInterviews: { $sum: 1 } } }
     ]);
     const interviews = jobsWithInterviews.length > 0 ? jobsWithInterviews[0].totalInterviews || 0 : 0;
-    console.log('Job stats for user:', req.user.id, { totalApplications, interviews });
+    //console.log('Job stats for user:', req.user.id, { totalApplications, interviews });
     res.json({ totalApplications, interviews });
   } catch (error) {
     console.error('Error fetching job stats:', error);
@@ -130,11 +130,11 @@ exports.getJobStats = async (req, res) => {
 
 exports.getRecentJobs = async (req, res) => {
   try {
-    console.log('Fetching recent jobs for user:', req.user.id);
+    //console.log('Fetching recent jobs for user:', req.user.id);
     const recentJobs = await Job.find({ user: new mongoose.Types.ObjectId(req.user.id) })
       .sort({ appliedDate: -1 })
       .limit(5);
-    console.log('Recent jobs fetched:', recentJobs);
+    //console.log('Recent jobs fetched:', recentJobs);
     res.json(recentJobs);
   } catch (error) {
     console.error('Error fetching recent jobs:', error.message, error.stack);
