@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerLink = document.getElementById('register-link');
 
   const API_BASE_URL = 'https://resume-coverletter-optimizer.onrender.com'; // Replace with 'https://your-backend-render-url.com' for production
-  const FRONTEND_URL = 'resume-coverletter-optimizer.vercel.app'; // Replace with your actual Vercel URL
-  const REGISTER_URL = 'resume-coverletter-optimizer.vercel.app'; // Replace with your actual registration URL
+  const FRONTEND_URL = 'https://resume-coverletter-optimizer.vercel.app/'; // Replace with your actual Vercel URL
+  const REGISTER_URL = 'https://resume-coverletter-optimizer.vercel.app/'; // Replace with your actual registration URL
 
   // Check if user is already logged in
   chrome.storage.local.get(['authToken'], (result) => {
@@ -141,6 +141,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Utility function to send a message to the content script with retries
+  async function sendMessageWithRetry(tabId, message, retries = 3, delay = 500) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        console.log(`Attempt ${i + 1}: Sending message to tab ${tabId}`);
+        return await new Promise((resolve, reject) => {
+          chrome.tabs.sendMessage(tabId, message, (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+            } else {
+              resolve(response);
+            }
+          });
+        });
+      } catch (error) {
+        console.warn(`Attempt ${i + 1} failed: ${error.message}`);
+        if (i === retries - 1) {
+          throw new Error(`Failed to send message after ${retries} attempts: ${error.message}`);
+        }
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
   // Extract job description using backend proxy
   extractJobBtn.addEventListener('click', async () => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -152,20 +176,39 @@ document.addEventListener('DOMContentLoaded', () => {
       const tabId = tabs[0].id;
       console.log('Sending message to tab:', tabId);
 
-      chrome.tabs.sendMessage(tabId, { action: 'getPageContent' }, async (response) => {
-        if (chrome.runtime.lastError) {
-          console.error('Message sending error:', chrome.runtime.lastError.message);
-          showMessage('Failed to get page content.', 'error');
-          return;
-        }
+      try {
+        // Use the retry mechanism to send the message
+        const response = await sendMessageWithRetry(tabId, { action: 'getPageContent' });
 
         if (response && response.content) {
+          // Check the size of the content before sending
+          const maxPayloadSize = 5000; // Adjust based on server limits
+          let contentToSend = response.content;
+          if (contentToSend.length > maxPayloadSize) {
+            contentToSend = contentToSend.substring(0, maxPayloadSize) + '... [Truncated due to size limit]';
+            console.warn(`Content truncated to ${maxPayloadSize} characters to avoid payload size issues.`);
+          }
+
           try {
             const res = await fetch(`${API_BASE_URL}/api/extract-job-details`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content: response.content })
+              body: JSON.stringify({ content: contentToSend })
             });
+
+            // Check for 413 status code
+            if (res.status === 413) {
+              throw new Error('Payload too large. The job description is too long to process. Try a shorter description.');
+            }
+
+            // Check if the response is JSON
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+              const text = await res.text();
+              console.error('Non-JSON response received:', text);
+              throw new Error('Server returned an invalid response (not JSON). Please try again later.');
+            }
+
             const data = await res.json();
 
             if (!res.ok) {
@@ -194,13 +237,21 @@ document.addEventListener('DOMContentLoaded', () => {
             companyInput.value = company;
             await handleResumeCheck(); // Check resumes and update UI
           } catch (error) {
-            console.error('Backend API error:', error);
-            showMessage('Failed to extract job description.', 'error');
+            console.error('Backend API error:', error.message);
+            showMessage(error.message || 'Failed to extract job description.', 'error');
           }
         } else {
           showMessage('No content found on this page.', 'error');
         }
-      });
+      } catch (error) {
+        console.error('Message sending error:', error.message);
+        // Check if the error is related to the content script not being loaded
+        if (error.message.includes('Receiving end does not exist')) {
+          showMessage('This page is not a supported job page (LinkedIn or Indeed). Please navigate to a job listing.', 'error');
+        } else {
+          showMessage('Failed to get page content: ' + error.message, 'error');
+        }
+      }
     });
   });
 

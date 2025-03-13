@@ -13,8 +13,8 @@
   "host_permissions": [
     "https://www.linkedin.com/*",
     "https://www.indeed.com/*",
-    "https://resume-coverletter-optimizer.onrender.com",
-    "resume-coverletter-optimizer.vercel.app"
+    "https://resume-coverletter-optimizer.onrender.com/*",
+    "https://resume-coverletter-optimizer.vercel.app/*"
   ],
   "action": {
     "default_popup": "popup.html",

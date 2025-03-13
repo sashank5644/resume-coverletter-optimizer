@@ -56,14 +56,55 @@ if (isJobPage()) {
   console.log('Not a job page:', window.location.href);
 }
 
-// Function to extract raw content from the page
-function getPageContent() {
-  // Get the main content of the job posting
-  let content = '';
-  const mainContent = document.querySelector('main') || document.body;
-  if (mainContent) {
-    content = mainContent.innerText; // Use innerText to get visible text
+// Function to clean and limit the size of extracted content
+function cleanAndLimitContent(element, maxLength = 5000) {
+  if (!element) return '';
+
+  // Remove script and style elements
+  const clone = element.cloneNode(true);
+  const scripts = clone.querySelectorAll('script, style');
+  scripts.forEach(script => script.remove());
+
+  // Extract text content and clean it
+  let text = clone.textContent || clone.innerText || '';
+  text = text
+    .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
+    .replace(/[\n\r]+/g, '\n') // Normalize line breaks
+    .trim();
+
+  // Limit the length to avoid payload issues
+  if (text.length > maxLength) {
+    text = text.substring(0, maxLength) + '... [Truncated]';
   }
+
+  return text;
+}
+
+// Function to extract relevant job description content from the page
+function getPageContent() {
+  let content = '';
+
+  // Check if on LinkedIn
+  if (window.location.href.includes('linkedin.com')) {
+    const jobDescriptionElement = document.querySelector('.jobs-description-content__text') || 
+                                 document.querySelector('.description__text') || 
+                                 document.querySelector('main');
+    content = cleanAndLimitContent(jobDescriptionElement);
+  }
+  // Check if on Indeed
+  else if (window.location.href.includes('indeed.com')) {
+    const jobDescriptionElement = document.querySelector('#jobDescriptionText') || 
+                                 document.querySelector('.jobsearch-JobComponent-description') || 
+                                 document.querySelector('main');
+    content = cleanAndLimitContent(jobDescriptionElement);
+  }
+
+  // Fallback: If no specific element is found, use the main content or body
+  if (!content) {
+    const mainContent = document.querySelector('main') || document.body;
+    content = cleanAndLimitContent(mainContent);
+  }
+
   return content;
 }
 
@@ -72,7 +113,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Message received in content script:', message);
   if (message.action === 'getPageContent') {
     const content = getPageContent();
-    console.log('Sending page content:', content.substring(0, 100)); // Log first 100 chars
+    console.log('Sending page content (length):', content.length); // Log the length of the content
     sendResponse({ content });
   }
+  return true; // Keep the message channel open for asynchronous response
 });

@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '5mb' })); // Increase payload limit to 5MB
 app.use(cors({
   origin: ['http://localhost:5173', 'https://resume-coverletter-optimizer.vercel.app', 'chrome-extension://abjngobpaipoobeokcgfnjeccmcggcic'], // Update with your actual Vercel URL
   credentials: true,
@@ -37,9 +37,18 @@ app.use('/api/users', require('./routes/users'));
 // New endpoint to extract job details
 app.post('/api/extract-job-details', async (req, res) => {
   const { content } = req.body;
-  //console.log('Job description!', {content});
+  console.log('Job description received (length):', content ? content.length : 0); // Log content length for debugging
+
   if (!content) {
     return res.status(400).json({ error: 'Content is required' });
+  }
+
+  // Check if content exceeds a safe limit before processing
+  const maxSafeContentLength = 5000; // Adjust based on your needs
+  if (content.length > maxSafeContentLength) {
+    return res.status(413).json({ 
+      error: `Payload too large. Content exceeds ${maxSafeContentLength} characters. Please reduce the size.` 
+    });
   }
 
   try {
