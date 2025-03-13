@@ -1,5 +1,4 @@
-# Resume-Coverletter-Optimizer
-   [Website](https://resume-coverletter-optimizer.vercel.app/)
+# [Resume-Coverletter-Optimizer](https://resume-coverletter-optimizer.vercel.app/)
 
 # Project Description
 
