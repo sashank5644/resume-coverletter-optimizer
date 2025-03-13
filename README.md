@@ -44,7 +44,7 @@ Built as a full-stack solution using React (Vite) for the frontend, Node.js and 
 
 # Clone the repository
 
-    * Ensure you have "resume-optimizer-extension" folder locally
+   * Ensure you have "resume-optimizer-extension" folder locally
 
 # Got to Chrome Extensions on your chrome browser
     1. chrome://extensions/
