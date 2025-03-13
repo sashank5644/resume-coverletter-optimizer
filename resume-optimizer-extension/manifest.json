@@ -13,9 +13,8 @@
   "host_permissions": [
     "https://www.linkedin.com/*",
     "https://www.indeed.com/*",
-    "http://localhost:3000/*",
     "https://your-backend-render-url.com/*",
-    "https://your-frontend-vercel-url.com/*"
+    "resume-coverletter-optimizer.vercel.app"
   ],
   "action": {
     "default_popup": "popup.html",

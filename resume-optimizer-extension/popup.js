@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerLink = document.getElementById('register-link');
 
   const API_BASE_URL = 'http://localhost:3000'; // Replace with 'https://your-backend-render-url.com' for production
-  const FRONTEND_URL = 'http://localhost:5173'; // Replace with your actual Vercel URL
-  const REGISTER_URL = 'http://localhost:5173/register'; // Replace with your actual registration URL
+  const FRONTEND_URL = 'resume-coverletter-optimizer.vercel.app'; // Replace with your actual Vercel URL
+  const REGISTER_URL = 'resume-coverletter-optimizer.vercel.app'; // Replace with your actual registration URL
 
   // Check if user is already logged in
   chrome.storage.local.get(['authToken'], (result) => {
