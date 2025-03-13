@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const messageDiv = document.getElementById('message');
   const registerLink = document.getElementById('register-link');
 
-  const API_BASE_URL = 'http://localhost:3000'; // Replace with 'https://your-backend-render-url.com' for production
+  const API_BASE_URL = 'https://resume-coverletter-optimizer.onrender.com'; // Replace with 'https://your-backend-render-url.com' for production
   const FRONTEND_URL = 'resume-coverletter-optimizer.vercel.app'; // Replace with your actual Vercel URL
   const REGISTER_URL = 'resume-coverletter-optimizer.vercel.app'; // Replace with your actual registration URL
 

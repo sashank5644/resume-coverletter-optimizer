@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000'; // Replace with 'https://your-backend-render-url.com' for production
+const API_BASE_URL = 'https://resume-coverletter-optimizer.onrender.com';
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Optimize Resume (not used in this flow but kept for future use)
