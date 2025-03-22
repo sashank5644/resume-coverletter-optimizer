@@ -132,7 +132,7 @@ function extractFromSelectors(selectors, element) {
   return '';
 }
 
-// Function to clean and intelligently extract content
+// Function  to clean and intelligently extract content
 function cleanAndLimitContent(element, maxLength = 10000) {
   if (!element) return '';
 
