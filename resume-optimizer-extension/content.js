@@ -56,9 +56,8 @@ if (isJobPage()) {
   console.log('Not a job page:', window.location.href);
 }
 
-// Enhanced LinkedIn specific selectors for better job extraction
+// Enhanced LinkedIn specific selectors
 const LINKEDIN_SELECTORS = {
-  // Job title selectors
   jobTitle: [
     'h1.job-title', 
     'h1.topcard__title',
@@ -66,29 +65,29 @@ const LINKEDIN_SELECTORS = {
     '.job-details-jobs-unified-top-card__job-title',
     '.topcard__title'
   ],
-  // Company name selectors
   company: [
     'a.topcard__org-name-link',
     '.job-details-jobs-unified-top-card__company-name',
     '.topcard__org-name-link',
     '[data-test-employer-name]'
   ],
-  // Location selectors
   location: [
     '.job-details-jobs-unified-top-card__bullet',
     '.topcard__flavor-row span',
     '[data-test-job-location]',
     '.job-details-jobs-unified-top-card__workplace-type'
   ],
-  // Job description selectors
   description: [
     '.jobs-description-content__text',
     '.show-more-less-html__markup',
     '.description__text',
     '[data-test-job-description]',
-    '.job-details-jobs-unified-top-card__job-insight'
+    '.job-details-jobs-unified-top-card__job-insight',
+    '.job-details__description', // Added
+    '.jobs-description__container', // Added
+    '.job-details-module', // Added
+    '[data-testid="job-description"]' // Added
   ],
-  // About section - company description
   about: [
     '.job-details-jobs-unified-top-card__company-description',
     '.topcard__flavor-row span',
@@ -112,9 +111,30 @@ const INDEED_SELECTORS = {
   ],
   description: [
     '#jobDescriptionText',
-    '.jobsearch-JobComponent-description'
+    '.jobsearch-JobComponent-description',
+    '.jobsearch-jobDescriptionText', // Added
+    '[data-testid="jobDescriptionText"]', // Added
+    '.job-details' // Added
   ]
 };
+
+// Updated fallback selectors
+const fallbackSelectors = [
+  '[id*="description"]',
+  '[id*="job-description"]',
+  '[id*="job-details"]', // Added
+  '[class*="description"]',
+  '[class*="job-description"]',
+  '[class*="job-details"]', // Added
+  '[class*="job-content"]', // Added
+  '.jobs-box__html-content',
+  '.jobs-description',
+  '.jobsearch-jobDescriptionText',
+  'section[class*="description"]', // Added
+  'div[class*="description"]', // Added
+  'section[id*="description"]', // Added
+  'div[id*="description"]' // Added
+];
 
 // Function to attempt to extract text from multiple selectors
 function extractFromSelectors(selectors, element) {
