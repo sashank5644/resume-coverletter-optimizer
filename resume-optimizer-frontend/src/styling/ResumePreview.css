@@ -1,0 +1,785 @@
+/* src/styling/ResumePreview.css */
+/* Common styles for all templates */
+.resume-preview {
+    font-size: 11pt !important;
+    color: #000 !important;
+    background: #fff !important;
+    padding: 1in;
+    width: 8.5in;
+    margin: 0 auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+.resume-preview * {
+    color: #000 !important;
+}
+
+/* Remove underlines from links */
+.no-underline, 
+.resume-preview a,
+.latex-template a,
+.latex-modern-template a,
+.latex-minimal-template a {
+    text-decoration: none !important;
+    border-bottom: none !important;
+}
+
+/* Template selector styles */
+/* Template dropdown styling */
+.preview-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .template-selector {
+    position: relative;
+    margin: 0 auto 0 10px;
+  }
+  
+  .template-dropdown {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(255, 0, 204, 0.1));
+    border: 1px solid rgba(0, 212, 255, 0.5);
+    color: #e0e7ff;
+    padding: 8px 30px 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    min-width: 170px;
+  }
+  
+  .template-selector::after {
+    content: '▼';
+    font-size: 10px;
+    color: #00d4ff;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  
+  .template-dropdown:hover {
+    border-color: #00d4ff;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+  }
+  
+  .template-dropdown:focus {
+    border-color: #ff00cc;
+    box-shadow: 0 0 15px rgba(255, 0, 204, 0.4);
+  }
+  
+  .template-dropdown option {
+    background: #1a2338;
+    color: #e0e7ff;
+    font-size: 14px;
+    padding: 8px;
+  }
+  
+  /* Make the preview header responsive */
+  @media (max-width: 600px) {
+    .preview-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .preview-header h3 {
+      margin-bottom: 10px;
+    }
+    
+    .template-selector {
+      margin: 0 0 10px 0;
+      width: 100%;
+    }
+    
+    .template-dropdown {
+      width: 100%;
+    }
+    
+    .btn-download {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+.preview-header h3 {
+    margin-right: auto;
+}
+
+/* Classic Template (original) */
+.classic-template {
+    font-family: 'Times New Roman', Times, serif !important;
+    line-height: 1.2;
+}
+
+.classic-template .resume-header {
+    text-align: center;
+    margin-bottom: 20pt;
+}
+
+.classic-template .resume-header h1 {
+    font-size: 24pt !important;
+    font-variant: small-caps;
+    margin: 0;
+    font-weight: bold;
+}
+
+.classic-template .resume-header p {
+    font-size: 10pt !important;
+    margin: 2pt 0 0;
+}
+
+.classic-template .resume-header a {
+    text-decoration: underline;
+}
+
+.classic-template .resume-section {
+    margin-bottom: 20pt;
+}
+
+.classic-template .resume-section h2 {
+    font-size: 12pt !important;
+    font-variant: small-caps;
+    margin: 0 0 5pt;
+    font-weight: bold;
+}
+
+.classic-template .resume-subheading {
+    margin-bottom: 7pt;
+}
+
+.classic-template .subheading-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10pt !important;
+}
+
+.classic-template .subheading-title {
+    font-weight: bold;
+}
+
+.classic-template .subheading-date {
+    font-weight: normal;
+}
+
+.classic-template .subheading-subtitle {
+    font-size: 10pt !important;
+    font-style: italic;
+    margin-top: 2pt;
+}
+
+.classic-template .resume-items {
+    list-style-type: none;
+    padding-left: 15pt;
+    margin: 0;
+    font-size: 10pt !important;
+}
+
+.classic-template .resume-items li {
+    position: relative;
+    margin-bottom: 2pt;
+}
+
+.classic-template .resume-items li:before {
+    content: '•';
+    position: absolute;
+    left: -10pt;
+    font-size: 8pt;
+    line-height: 10pt;
+}
+
+.classic-template .skills-section p {
+    font-size: 10pt !important;
+    margin: 0;
+}
+
+.classic-template .skills-section strong {
+    font-weight: bold;
+}
+
+/* Modern Template (based on ModernCV banking style) */
+.modern-template {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif !important;
+    line-height: 1.4;
+    color: #333 !important;
+}
+
+.modern-template * {
+    color: #333 !important;
+}
+
+.modern-template .modern-header {
+    margin-bottom: 20pt;
+    border-bottom: 4pt solid #0e6e55;
+    padding-bottom: 10pt;
+}
+
+.modern-template .modern-header h1 {
+    font-size: 20pt !important;
+    font-weight: 600;
+    color: #0e6e55 !important;
+    margin: 0 0 10pt 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modern-template .modern-contact-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15pt;
+    font-size: 9pt !important;
+}
+
+.modern-template .modern-contact-info span {
+    display: flex;
+    align-items: center;
+}
+
+.modern-template .modern-contact-info a {
+    color: #0e6e55 !important;
+    text-decoration: none;
+}
+
+.modern-template .modern-icon {
+    display: inline-block;
+    width: 12pt;
+    height: 12pt;
+    margin-right: 5pt;
+    background-color: #0e6e55;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+.modern-template .modern-section {
+    margin-bottom: 15pt;
+}
+
+.modern-template .modern-section h2 {
+    font-size: 12pt !important;
+    color: #0e6e55 !important;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin: 0 0 8pt 0;
+    padding-bottom: 3pt;
+    letter-spacing: 0.5pt;
+}
+
+.modern-template .modern-summary {
+    font-size: 9.5pt !important;
+    margin: 0 0 10pt 0;
+    text-align: justify;
+}
+
+.modern-template .modern-entry {
+    margin-bottom: 12pt;
+}
+
+.modern-template .modern-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.modern-template .modern-entry-title {
+    font-weight: 600;
+    font-size: 10pt !important;
+}
+
+.modern-template .modern-entry-date {
+    font-size: 9pt !important;
+    font-style: italic;
+}
+
+.modern-template .modern-entry-subtitle {
+    font-size: 9.5pt !important;
+    font-style: italic;
+    margin: 2pt 0 4pt 0;
+}
+
+.modern-template .modern-entry-details {
+    list-style-type: none;
+    padding-left: 12pt;
+    margin: 5pt 0 0 0;
+}
+
+.modern-template .modern-entry-details li {
+    position: relative;
+    padding-left: 10pt;
+    font-size: 9pt !important;
+    margin-bottom: 3pt;
+    line-height: 1.3;
+    text-align: justify;
+}
+
+.modern-template .modern-entry-details li:before {
+    content: '●';
+    position: absolute;
+    left: -2pt;
+    color: #0e6e55 !important;
+    font-size: 7pt;
+}
+
+.modern-template .modern-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8pt;
+}
+
+.modern-template .modern-skill {
+    background-color: rgba(14, 110, 85, 0.1);
+    padding: 3pt 8pt;
+    border-radius: 3pt;
+    font-size: 9pt !important;
+    color: #0e6e55 !important;
+}
+
+/* Minimal Template */
+.minimal-template {
+    font-family: 'Helvetica Neue', Arial, sans-serif !important;
+    line-height: 1.3;
+    color: #333 !important;
+}
+
+.minimal-template * {
+    color: #333 !important;
+}
+
+.minimal-template .minimal-header {
+    text-align: center;
+    margin-bottom: 25pt;
+}
+
+.minimal-template .minimal-header h1 {
+    font-size: 24pt !important;
+    font-weight: 300;
+    letter-spacing: 2pt;
+    margin: 0 0 10pt 0;
+    text-transform: uppercase;
+}
+
+.minimal-template .minimal-contact {
+    font-size: 9pt !important;
+}
+
+.minimal-template .minimal-contact a {
+    color: #333 !important;
+    text-decoration: none;
+    border-bottom: 1pt dotted #ccc;
+}
+
+.minimal-template .minimal-section {
+    margin-bottom: 20pt;
+}
+
+.minimal-template .minimal-section h2 {
+    font-size: 12pt !important;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 2pt;
+    margin: 0 0 15pt 0;
+    position: relative;
+    display: inline-block;
+}
+
+.minimal-template .minimal-section h2:after {
+    content: '';
+    position: absolute;
+    bottom: -5pt;
+    left: 0;
+    width: 30pt;
+    height: 1pt;
+    background-color: #333;
+}
+
+.minimal-template .minimal-section > p {
+    font-size: 10pt !important;
+    margin: 0 0 10pt 0;
+    line-height: 1.4;
+}
+
+.minimal-template .minimal-item {
+    margin-bottom: 15pt;
+}
+
+.minimal-template .minimal-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3pt;
+}
+
+.minimal-template .minimal-item-title {
+    font-weight: 600;
+    font-size: 10pt !important;
+}
+
+.minimal-template .minimal-item-period {
+    font-size: 9pt !important;
+}
+
+.minimal-template .minimal-item-subtitle {
+    font-size: 9.5pt !important;
+    margin-bottom: 5pt;
+}
+
+.minimal-template .minimal-item-points {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 8pt 0 0 0;
+}
+
+.minimal-template .minimal-item-points li {
+    font-size: 9.5pt !important;
+    position: relative;
+    padding-left: 15pt;
+    margin-bottom: 4pt;
+    line-height: 1.4;
+}
+
+.minimal-template .minimal-item-points li:before {
+    content: '—';
+    position: absolute;
+    left: 0;
+}
+
+.minimal-template .minimal-skills {
+    font-size: 10pt !important;
+    line-height: 1.5;
+}
+
+/* LaTeX Classic Template */
+.latex-template {
+    font-family: 'Times New Roman', Times, serif !important;
+    line-height: 1.2;
+    padding: 1in;
+}
+
+.latex-template .latex-header {
+    text-align: center;
+    margin-bottom: 20pt;
+}
+
+.latex-template .latex-title {
+    font-size: 16pt !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+    margin-bottom: 5pt;
+}
+
+.latex-template .latex-contact {
+    font-size: 10pt !important;
+}
+
+.latex-template .latex-section {
+    margin-bottom: 18pt;
+}
+
+.latex-template .latex-section-title {
+    font-size: 12pt !important;
+    font-variant: small-caps;
+    font-weight: bold;
+    margin-bottom: 8pt;
+}
+
+.latex-template .latex-entry {
+    margin-bottom: 10pt;
+}
+
+.latex-template .latex-entry-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.latex-template .latex-entry-title {
+    font-weight: bold;
+    font-size: 10pt !important;
+}
+
+.latex-template .latex-entry-date {
+    font-size: 10pt !important;
+}
+
+.latex-template .latex-entry-subtitle {
+    font-style: italic;
+    font-size: 10pt !important;
+    margin-top: 2pt;
+}
+
+.latex-template .latex-entry-details {
+    list-style-type: none;
+    padding-left: 15pt;
+    margin: 5pt 0 0 0;
+}
+
+.latex-template .latex-entry-details li {
+    position: relative;
+    font-size: 10pt !important;
+    margin-bottom: 3pt;
+}
+
+.latex-template .latex-entry-details li:before {
+    content: '•';
+    position: absolute;
+    left: -10pt;
+}
+
+.latex-template .latex-skills p {
+    font-size: 10pt !important;
+}
+
+/* LaTeX Modern Template */
+.latex-modern-template {
+    font-family: 'Charter', Georgia, serif !important;
+    line-height: 1.4;
+}
+
+.latex-modern-template .latex-modern-header {
+    text-align: center;
+    margin-bottom: 20pt;
+}
+
+.latex-modern-template .latex-modern-name {
+    font-size: 20pt !important;
+    font-weight: 600;
+    color: #0e6e55 !important;
+    margin-bottom: 10pt;
+}
+
+.latex-modern-template .latex-modern-contact {
+    font-size: 9pt !important;
+    margin-bottom: 15pt;
+}
+
+.latex-modern-template .latex-modern-section {
+    margin-bottom: 15pt;
+}
+
+.latex-modern-template .latex-modern-section-title {
+    font-size: 12pt !important;
+    font-weight: 600;
+    color: #0e6e55 !important;
+    text-transform: uppercase;
+    margin-bottom: 10pt;
+}
+
+.latex-modern-template .latex-modern-summary {
+    font-size: 10pt !important;
+    margin-bottom: 15pt;
+    text-align: justify;
+}
+
+.latex-modern-template .latex-modern-skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10pt;
+}
+
+.latex-modern-template .latex-modern-skill-category {
+    font-size: 9.5pt !important;
+    margin-bottom: 5pt;
+}
+
+.latex-modern-template .latex-modern-skill-category-name {
+    font-weight: bold;
+    margin-right: 5pt;
+}
+
+.latex-modern-template .latex-modern-experience-entry {
+    margin-bottom: 15pt;
+}
+
+.latex-modern-template .latex-modern-experience-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2pt;
+}
+
+.latex-modern-template .latex-modern-company-name {
+    font-weight: bold;
+    font-size: 10pt !important;
+}
+
+.latex-modern-template .latex-modern-experience-period {
+    font-style: italic;
+    font-size: 9pt !important;
+}
+
+.latex-modern-template .latex-modern-job-title {
+    font-style: italic;
+    font-size: 10pt !important;
+    margin-bottom: 5pt;
+}
+
+.latex-modern-template .latex-modern-job-details {
+    list-style-type: none;
+    padding-left: 15pt;
+    margin: 0;
+}
+
+.latex-modern-template .latex-modern-job-details li {
+    position: relative;
+    padding-left: 10pt;
+    font-size: 9.5pt !important;
+    margin-bottom: 3pt;
+}
+
+.latex-modern-template .latex-modern-job-details li:before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: #0e6e55 !important;
+}
+
+.latex-modern-template .latex-modern-education-entry {
+    margin-bottom: 10pt;
+}
+
+.latex-modern-template .latex-modern-education-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.latex-modern-template .latex-modern-institution {
+    font-weight: bold;
+    font-size: 10pt !important;
+}
+
+.latex-modern-template .latex-modern-year {
+    font-style: italic;
+    font-size: 9pt !important;
+}
+
+.latex-modern-template .latex-modern-degree {
+    font-style: italic;
+    font-size: 9.5pt !important;
+}
+
+/* LaTeX Minimal Template */
+.latex-minimal-template {
+    font-family: 'Helvetica Neue', Arial, sans-serif !important;
+    line-height: 1.3;
+}
+
+.latex-minimal-template .latex-minimal-header {
+    text-align: center;
+    margin-bottom: 20pt;
+}
+
+.latex-minimal-template .latex-minimal-name {
+    font-size: 18pt !important;
+    font-weight: 300;
+    letter-spacing: 2pt;
+    margin-bottom: 8pt;
+    text-transform: uppercase;
+}
+
+.latex-minimal-template .latex-minimal-contact {
+    font-size: 9pt !important;
+    margin-bottom: 15pt;
+}
+
+.latex-minimal-template .latex-minimal-section {
+    margin-bottom: 18pt;
+}
+
+.latex-minimal-template .latex-minimal-section-title {
+    font-size: 11pt !important;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1.5pt;
+    margin-bottom: 10pt;
+    position: relative;
+    display: inline-block;
+}
+
+.latex-template .latex-section-line {
+    border-top: 1pt solid #000;
+    margin: 2pt 0 8pt 0;
+}
+
+.latex-modern-template .latex-modern-section-line {
+    border-top: 1pt solid #0e6e55;
+    margin: 2pt 0 8pt 0;
+}
+
+.latex-minimal-template .latex-minimal-section-title:after {
+    content: '';
+    position: absolute;
+    bottom: -4pt;
+    left: 0;
+    width: 25pt;
+    height: 1pt;
+    background-color: #333;
+}
+
+.latex-minimal-template .latex-minimal-summary {
+    font-size: 10pt !important;
+    margin-bottom: 15pt;
+    line-height: 1.4;
+}
+
+.latex-minimal-template .latex-minimal-entries {
+    margin-top: 10pt;
+}
+
+.latex-minimal-template .latex-minimal-entry {
+    margin-bottom: 12pt;
+}
+
+.latex-minimal-template .latex-minimal-entry-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3pt;
+}
+
+.latex-minimal-template .latex-minimal-entry-company,
+.latex-minimal-template .latex-minimal-entry-degree {
+    font-weight: 600;
+    font-size: 10pt !important;
+}
+
+.latex-minimal-template .latex-minimal-entry-date {
+    font-size: 9pt !important;
+}
+
+.latex-minimal-template .latex-minimal-entry-title,
+.latex-minimal-template .latex-minimal-entry-institution {
+    font-size: 9.5pt !important;
+    margin-bottom: 5pt;
+}
+
+.latex-minimal-template .latex-minimal-entry-details {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 5pt 0 0 0;
+}
+
+.latex-minimal-template .latex-minimal-entry-details li {
+    position: relative;
+    padding-left: 12pt;
+    font-size: 9.5pt !important;
+    margin-bottom: 3pt;
+    line-height: 1.4;
+}
+
+.latex-minimal-template .latex-minimal-entry-details li:before {
+    content: '—';
+    position: absolute;
+    left: 0;
+}
+
+.latex-minimal-template .latex-minimal-skills {
+    font-size: 9.5pt !important;
+    line-height: 1.5;
+}

@@ -5,10 +5,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 exports.optimizeResume = async (req, res) => {
-  const { resumeContent, resumeSkills, jobDescription } = req.body;
+  const { resumeProjects, resumeSkills, jobDescription } = req.body;
 
-  if (!resumeContent || !jobDescription) {
-    return res.status(400).json({ error: 'Resume content and job description are required' });
+  if (!resumeProjects || !jobDescription) {
+    return res.status(400).json({ error: 'Resume projects and job description are required' });
   }
 
   try {
@@ -19,13 +19,13 @@ exports.optimizeResume = async (req, res) => {
 
     // Construct prompt for resume optimization
     const prompt = `
-      You are an expert resume optimizer. Optimize the following resume content to better match the job description provided. 
-      Focus on aligning skills, keywords, and experiences with the job requirements. Return ONLY the optimized resume content and skills in the EXACT following format with no additional text:
-      - Optimized Resume Content: [Your optimized content here]
+      You are an expert resume optimizer. Optimize the following resume projects to better match the job description provided. 
+      Focus on aligning project descriptions, skills, and keywords with the job requirements. Return ONLY the optimized projects and skills in the EXACT following format with no additional text:
+      - Optimized Projects: [Your optimized projects here, in the same format as the input]
       - Skills: [Comma-separated list of updated skills]
 
-      **Resume Content:**
-      ${resumeContent}
+      **Resume Projects:**
+      ${resumeProjects}
 
       **Current Skills:**
       ${resumeSkills || 'None provided'}
@@ -43,16 +43,16 @@ exports.optimizeResume = async (req, res) => {
     //console.log('Gemini raw response:', responseText); // Debug log for full response
 
     // Parse the response with robust handling
-    let optimizedContent = '';
+    let optimizedProjects = '';
     let skills = [];
 
-    // Try to extract optimized content
-    const optimizedContentMatch = responseText.match(/Optimized Resume Content: ([\s\S]*?)(?=\n- Skills:|$)/i);
-    if (optimizedContentMatch) {
-      optimizedContent = optimizedContentMatch[1].trim();
+    // Try to extract optimized projects
+    const optimizedProjectsMatch = responseText.match(/Optimized Projects: ([\s\S]*?)(?=\n- Skills:|$)/i);
+    if (optimizedProjectsMatch) {
+      optimizedProjects = optimizedProjectsMatch[1].trim();
     } else {
-      console.warn('Optimized Resume Content not found in Gemini response, using original content');
-      optimizedContent = resumeContent; // Fallback to original content
+      console.warn('Optimized Projects not found in Gemini response, using original projects');
+      optimizedProjects = resumeProjects; // Fallback to original projects
     }
 
     // Try to extract skills
@@ -65,11 +65,11 @@ exports.optimizeResume = async (req, res) => {
     }
 
     // Ensure we have valid data to return
-    if (!optimizedContent) {
-      throw new Error('No valid optimized content generated');
+    if (!optimizedProjects) {
+      throw new Error('No valid optimized projects generated');
     }
 
-    res.json({ content: optimizedContent, skills });
+    res.json({ projects: optimizedProjects, skills });
   } catch (error) {
     console.error('Error optimizing resume:', error.message, error.stack);
     res.status(500).json({ 

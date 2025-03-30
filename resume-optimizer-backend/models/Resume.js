@@ -10,10 +10,11 @@ const resumeSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  content: {
-    type: String,
-    required: true
-  },
+  projects: [{
+    name: String,
+    date: String,
+    description: String
+  }],
   skills: [String],
   experience: [{
     position: String,

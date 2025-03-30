@@ -1,3 +1,6 @@
+// Add this to your App.jsx (if possible)
+// The className "resume-app-container" will help center your content
+
 import { useContext } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
@@ -20,7 +23,7 @@ function App() {
     <BrowserRouter>
       <div className="app">
         <Navbar user={user} logout={logout} />
-        <div className="container">
+        <div className="container resume-app-container">
           <Routes>
             <Route path="/" element={user ? <Dashboard user={user} /> : <Login />} />
             <Route path="/login" element={<Login />} />

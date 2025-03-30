@@ -29,12 +29,12 @@ exports.getResumeById = async (req, res) => {
 };
 
 exports.createResume = async (req, res) => {
-  const { title, content, skills, education, experience } = req.body;
+  const { title, projects, skills, education, experience } = req.body;
 
   try {
     const resume = new Resume({
       title,
-      content,
+      projects, // Changed from content to projects
       skills,
       education,
       experience,
@@ -49,7 +49,7 @@ exports.createResume = async (req, res) => {
 };
 
 exports.updateResume = async (req, res) => {
-  const { title, content, skills, education, experience } = req.body;
+  const { title, projects, skills, education, experience } = req.body;
 
   try {
     let resume = await Resume.findById(req.params.id);
@@ -62,7 +62,7 @@ exports.updateResume = async (req, res) => {
 
     resume = await Resume.findByIdAndUpdate(
       req.params.id,
-      { title, content, skills, education, experience, lastUpdated: Date.now() },
+      { title, projects, skills, education, experience, lastUpdated: Date.now() }, // Changed from content to projects
       { new: true }
     );
     res.json(resume);
