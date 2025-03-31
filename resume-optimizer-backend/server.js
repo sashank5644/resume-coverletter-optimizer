@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const cors = require('cors'); // Import the cors package
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const cors = require('cors');
+const { extractResume } = require('./llm/resumeExtractor'); // Import the resume extractor
 
 // Load environment variables
 dotenv.config();
@@ -12,7 +12,7 @@ const app = express();
 // Middleware
 app.use(express.json({ limit: '5mb' })); // Increase payload limit to 5MB
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://resume-coverletter-optimizer.vercel.app', 'chrome-extension://abjngobpaipoobeokcgfnjeccmcggcic'], // Update with your actual Vercel URL
+  origin: ['http://localhost:5173', 'https://resume-coverletter-optimizer.vercel.app', 'chrome-extension://abjngobpaipoobeokcgfnjeccmcggcic'],
   credentials: true,
 })); // Enable CORS for all routes
 
@@ -24,27 +24,21 @@ mongoose.connect(process.env.MONGODB_URI, {
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Initialize Google Generative AI with GEMINI_API_KEY2
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY2);
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
 // Routes
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/resumes', require('./routes/resumes'));
 app.use('/api/users', require('./routes/users'));
 
-// New endpoint to extract job details
+// Endpoint to extract job details
 app.post('/api/extract-job-details', async (req, res) => {
   const { content } = req.body;
-  //console.log('Job description received (length):', content ? content.length : 0); // Log content length for debugging
 
   if (!content) {
     return res.status(400).json({ error: 'Content is required' });
   }
 
-  // Check if content exceeds a safe limit before processing
-  const maxSafeContentLength = 5000; // Adjust based on your needs
+  const maxSafeContentLength = 5000;
   if (content.length > maxSafeContentLength) {
     return res.status(413).json({ 
       error: `Payload too large. Content exceeds ${maxSafeContentLength} characters. Please reduce the size.` 
@@ -93,10 +87,13 @@ app.post('/api/extract-job-details', async (req, res) => {
     ${content}
     `;
 
+    const { GoogleGenerativeAI } = require('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY2);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
     const result = await model.generateContent(prompt);
     const extractedText = result.response.text();
 
-    // Improved parsing with regex to handle multi-line sections
     const parsed = {
       position: extractSection(extractedText, "Position:"),
       company: extractSection(extractedText, "Company:"),
@@ -111,13 +108,29 @@ app.post('/api/extract-job-details', async (req, res) => {
 
     res.json(parsed);
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('Gemini API error in extract-job-details:', error);
     res.status(500).json({ error: 'Failed to extract job details' });
   }
 });
 
+// New endpoint to extract and parse a resume
+app.post('/api/extract-resume', async (req, res) => {
+  const { file, text } = req.body;
+
+  if (!file && !text) {
+    return res.status(400).json({ error: 'Please provide a PDF file or resume text.' });
+  }
+
+  try {
+    const parsedData = await extractResume(file, text);
+    res.json(parsedData);
+  } catch (err) {
+    console.error('Error in /api/extract-resume:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 function extractSection(text, sectionHeader) {
-  // Create a regex pattern that captures everything until the next section header or end of text
   const pattern = new RegExp(`\\*\\*${sectionHeader}\\*\\*\\s*([\\s\\S]*?)(?=\\*\\*\\w+:|$)`, 'i');
   const match = text.match(pattern);
   

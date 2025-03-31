@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^0.7.0",
+    "@google/generative-ai": "^0.24.0",
     "axios": "^1.7.9",
     "html2pdf.js": "^0.10.3",
     "react": "^19.0.0",

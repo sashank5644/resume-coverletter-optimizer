@@ -10,7 +10,7 @@ import '../styling/ResumeBuilder.css';
 const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
 
 // Define API base URL using import.meta.env
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://resume-coverletter-optimizer.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const ResumeBuilder = () => {
   const { user, token } = useContext(AuthContext);
@@ -25,11 +25,16 @@ const ResumeBuilder = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('classic');
+  // State for modal and file/text input
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [resumeFile, setResumeFile] = useState(null);
+  const [resumeText, setResumeText] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
 
   // Form state for new/editing resume
   const [formData, setFormData] = useState({
     title: '',
-    projects: '', // Changed from content to projects
+    projects: '',
     skills: '',
     education: '',
     experience: ''
@@ -144,10 +149,9 @@ const ResumeBuilder = () => {
     setCurrentResume(selected);
     setFormData({
       title: selected.title,
-      // Handle both projects (new format) and content (old format) for backward compatibility
       projects: selected.projects && Array.isArray(selected.projects)
         ? selected.projects.map(proj => `${proj.name}, ${proj.date}\n${proj.description}`).join('\n\n')
-        : selected.content || '', // Fallback to content if projects is not available
+        : selected.content || '',
       skills: selected.skills.join(', '),
       education: selected.education.map(edu => 
         `${edu.degree}, ${edu.institution}, ${edu.year}`).join('\n'),
@@ -162,7 +166,7 @@ const ResumeBuilder = () => {
     setCurrentResume(null);
     setFormData({
       title: '',
-      projects: '', // Changed from content to projects
+      projects: '',
       skills: '',
       education: '',
       experience: ''
@@ -190,16 +194,13 @@ const ResumeBuilder = () => {
     }
   
     try {
-      // Validate title
       if (!formData.title.trim()) {
         setErrorMsg('Resume title is required.');
         return;
       }
   
-      // Parse skills
       const skills = formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill);
   
-      // Parse education
       const education = formData.education.split('\n')
         .filter(line => line.trim())
         .map(edu => {
@@ -210,7 +211,6 @@ const ResumeBuilder = () => {
           return { degree, institution, year };
         });
   
-      // Parse experience
       const experience = [];
       const expEntries = formData.experience.split('\n\n');
       for (const entry of expEntries) {
@@ -224,7 +224,6 @@ const ResumeBuilder = () => {
         experience.push({ position, company, period, description });
       }
   
-      // Parse projects
       const projects = [];
       const projEntries = formData.projects.split('\n\n');
       for (const entry of projEntries) {
@@ -286,7 +285,7 @@ const ResumeBuilder = () => {
         setCurrentResume(null);
         setFormData({
           title: '',
-          projects: '', // Changed from content to projects
+          projects: '',
           skills: '',
           education: '',
           experience: ''
@@ -360,6 +359,103 @@ const ResumeBuilder = () => {
     setSelectedTemplate(e.target.value);
   };
 
+  // Function to handle opening the import modal
+  const handleOpenImportModal = () => {
+    setShowImportModal(true);
+    setResumeFile(null);
+    setResumeText('');
+  };
+
+  // Function to handle closing the import modal
+  const handleCloseImportModal = () => {
+    setShowImportModal(false);
+    setResumeFile(null);
+    setResumeText('');
+    setImportLoading(false);
+  };
+
+  // Function to handle file input change
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      setResumeFile(file);
+      setResumeText(''); // Clear text input if file is selected
+    } else {
+      setErrorMsg('Please upload a valid PDF file.');
+    }
+  };
+
+  // Function to handle text input change
+  const handleTextChange = (e) => {
+    setResumeText(e.target.value);
+    setResumeFile(null); // Clear file input if text is entered
+  };
+
+  // Function to handle importing and parsing the resume using the backend
+  const handleImportResume = async () => {
+    if (!resumeFile && !resumeText.trim()) {
+      setErrorMsg('Please upload a PDF file or paste the resume text.');
+      return;
+    }
+
+    setImportLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const parsedData = await parseResumeWithBackend(resumeFile, resumeText);
+
+      // Update formData with the parsed data
+      setFormData({
+        title: parsedData.title || 'Imported Resume',
+        projects: parsedData.projects || '',
+        skills: parsedData.skills || '',
+        education: parsedData.education || '',
+        experience: parsedData.experience || ''
+      });
+
+      setSuccessMsg('Resume imported and parsed successfully.');
+      handleCloseImportModal();
+    } catch (err) {
+      console.error('Error importing resume:', err);
+      setErrorMsg('Failed to import and parse resume. Please try again.');
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  // Function to call the backend for resume parsing
+  const parseResumeWithBackend = async (file, text) => {
+    try {
+      let fileBase64 = null;
+      if (file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+        fileBase64 = btoa(
+          buffer.reduce((data, byte) => data + String.fromCharCode(byte), '')
+        );
+      }
+
+      const response = await axios.post(`${API_BASE_URL}/api/extract-resume`, {
+        file: fileBase64,
+        text
+      });
+
+      const parsedData = response.data;
+
+      return {
+        title: parsedData.title || 'Imported Resume',
+        projects: parsedData.projects || '',
+        skills: parsedData.skills || '',
+        education: parsedData.education || '',
+        experience: parsedData.experience || ''
+      };
+    } catch (err) {
+      console.error('Error with backend API:', err.message);
+      throw new Error('Failed to process resume with backend API. Please try again.');
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading resumes...</div>;
   }
@@ -376,6 +472,14 @@ const ResumeBuilder = () => {
           <div className="resume-sidebar">
             <button className="create-resume-btn" onClick={handleCreateNew}>
               CREATE NEW RESUME
+            </button>
+            {/* Import Resume Button */}
+            <button
+              className="create-resume-btn"
+              onClick={handleOpenImportModal}
+              style={{ marginTop: '10px' }}
+            >
+              IMPORT RESUME
             </button>
             
             <h3>YOUR RESUMES</h3>
@@ -413,7 +517,7 @@ const ResumeBuilder = () => {
             <div className="editor-section">
               <h3>PROJECTS (SEPARATE ENTRIES WITH BLANK LINE)</h3>
               <textarea
-                name="projects" // Changed from content to projects
+                name="projects"
                 rows="3"
                 value={formData.projects}
                 onChange={handleChange}
@@ -537,6 +641,54 @@ const ResumeBuilder = () => {
           </div>
         </div>
       </div>
+
+      {/* Import Resume Modal */}
+      {showImportModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Import Resume</h2>
+            <p>Upload a PDF resume or paste its content below to automatically fill the editor fields.</p>
+
+            <div className="editor-section">
+              <h3>Upload PDF Resume</h3>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                className="editor-input"
+              />
+            </div>
+
+            <div className="editor-section">
+              <h3>Or Paste Resume Text</h3>
+              <textarea
+                rows="5"
+                value={resumeText}
+                onChange={handleTextChange}
+                placeholder="Paste your resume text here..."
+                className="editor-textarea"
+              ></textarea>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="btn-primary"
+                onClick={handleImportResume}
+                disabled={importLoading}
+              >
+                {importLoading ? 'Importing...' : 'Import'}
+              </button>
+              <button
+                className="btn-danger"
+                onClick={handleCloseImportModal}
+                disabled={importLoading}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
